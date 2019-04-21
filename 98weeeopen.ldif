@@ -50,8 +50,8 @@ attributeTypes: ( 2.25.100841824846419382782883384063386193490.1.2
 #
 objectClasses: ( 2.25.100841824846419382782883384063386193490.2.1
   NAME 'weeeOpenPerson'
-  SUP inetOrgPerson
-  AUXILIARY
+  SUP ( inetOrgPerson $ schacPersonalCharacteristics )
+  STRUCTURAL
   MAY ( safetyTestDate $ degreeCourse )
   X-ORIGIN 'WEEE Open'
   )
