@@ -13,7 +13,7 @@ ou: People
 dn: ou=Services,dc=example,dc=local
 objectClass: organizationalunit
 objectClass: top
-ou: People
+ou: Services
 
 dn: cn=HR,ou=Groups,dc=example,dc=local
 objectClass: groupOfNames
