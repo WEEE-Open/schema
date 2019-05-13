@@ -42,8 +42,8 @@ def acis():
 
 	print_aci(make_aci('Allow HR to read users', ('targetfilter = "(uid=*)"', 'targetattr = "createTimestamp || creatorsName || modifiersName || modifyTimestamp || objectClass || memberOf || uid || sn || schacPersonalUniqueCode || degreeCourse || schacDateOfBirth || schacPlaceOfBirth || mobile || mail || safetyTestDate || telegramID || telegramNickname || description"'), {'read', 'search', 'compare'}, f'groupdn = "ldap:///cn=HR,ou=Groups,{suffix}"'))
 	# limits possible objectClass values, but doesn't allow to add accounts with less than all these values
-	print_aci(make_aci('Allow HR to add and edit users', ('targetfilter="(&(uid=*)(objectClass=top)(objectClass=inetOrgPerson)(objectClass=organizationalPerson)(objectClass=person)(objectClass=schacPersonalCharacteristics)(objectClass=telegramAccount)(objectClass=weeeOpenPerson))"', 'targetattr = "objectClass ||  uid || sn || schacPersonalUniqueCode || degreeCourse || schacDateOfBirth || schacPlaceOfBirth || mobile || mail || safetyTestDate || telegramID || telegramNickname || description"'), {'add', 'write'}, f'groupdn = "ldap:///cn=HR,ou=Groups,{suffix}"'))
-	print_aci(make_aci('Allow HR to change users password', ('targetfilter = "(uid=*)"', 'targetattr = "userPassword"'), {'write'}, f'groupdn = "ldap:///cn=HR,ou=Groups,{suffix}"'))
+	print_aci(make_aci('Allow HR to add, edit, delete users', ('targetfilter="(&(uid=*)(objectClass=top)(objectClass=inetOrgPerson)(objectClass=organizationalPerson)(objectClass=person)(objectClass=schacPersonalCharacteristics)(objectClass=telegramAccount)(objectClass=weeeOpenPerson))"', 'targetattr = "objectClass ||  uid || sn || schacPersonalUniqueCode || degreeCourse || schacDateOfBirth || schacPlaceOfBirth || mobile || mail || safetyTestDate || telegramID || telegramNickname || description"'), {'add', 'write', 'delete'}, f'groupdn = "ldap:///cn=HR,ou=Groups,{suffix}"'))
+	print_aci(make_aci('Allow HR to change users password', ('targetfilter = "(uid=*)"', 'targetattr = "userPassword"'), {'add', 'write'}, f'groupdn = "ldap:///cn=HR,ou=Groups,{suffix}"'))
 
 	print(f"""      -
         dn: "ou=Groups,{suffix}"
