@@ -29,17 +29,21 @@ def acis():
 	print(f"""      -
         dn: "{suffix}"
         acis:""")
-	print_aci(make_aci('Allow all to read suffix', ('target = "ldap:///{suffix}"', 'targetattr = "objectClass"'), {'read', 'search'}, f'userdn = "ldap:///all"'))
+	# Apparently, avoiding disclosure ("does this DN exist or not?") is impossible, so it's not worth it to try to hide
+	# entries that shouldn't be seen e.g. in ou=Services. Authorized accounts will know which other accounts exist and
+	# their objectClass, but that doesn't seem an extreme security risk to me...
+	print_aci(make_aci('Allow all to read suffix', (f'target = "ldap:///{suffix}"', 'targetattr = "objectClass"'), {'read', 'search'}, f'userdn = "ldap:///all"'))
 	print(f"""      -
         dn: "ou=People,{suffix}"
         acis:""")
-	print_aci(make_aci('Allow Keycloak to read users', ('targetfilter = "(uid=*)"', 'targetattr = "objectClass || cn || uid || telegramID || createTimestamp || creatorsName || entrydn || entryid || hasSubordinates || modifiersName || modifyTimestamp || nsUniqueId || numSubordinates || parentid || subschemaSubentry"'), {'read', 'search', 'compare'}, f'userdn = "ldap:///cn=Keycloak,ou=Services,{suffix}"'))
+	print_aci(make_aci('Allow Keycloak to read users', ('targetfilter = "(uid=*)"', 'targetattr = "objectClass || memberOf || dn || cn || uid || telegramID || createTimestamp || creatorsName || entrydn || entryid || hasSubordinates || modifiersName || modifyTimestamp || nsUniqueId || numSubordinates || parentid || subschemaSubentry"'), {'read', 'search', 'compare'}, f'userdn = "ldap:///cn=Keycloak,ou=Services,{suffix}"'))
 	print_aci(make_aci('Allow Keycloak to change passwords', ('targetfilter = "(uid=*)"', 'targetattr = "userPassword"'), {'write'}, f'userdn = "ldap:///cn=Keycloak,ou=Services,{suffix}"'))
 	print_aci(make_aci('Allow users to change their password', ('targetfilter = "(uid=*)"', 'targetattr = "userPassword"'), {'write'}, f'userdn = "ldap:///self"'))
-	print_aci(make_aci('Allow HR to read and edit users', ('targetfilter = "(uid=*)"', 'targetattr = "objectClass || uid || sn || schacPersonalUniqueCode || degreeCourse || schacDateOfBirth || schacPlaceOfBirth || mobile || mail || safetyTestDate || telegramID || telegramNickname || description"'), {'add', 'read', 'write', 'search', 'compare'}, f'groupdn = "ldap:///cn=HR,ou=Groups,{suffix}"'))
+
+	print_aci(make_aci('Allow HR to read users', ('targetfilter = "(uid=*)"', 'targetattr = "createTimestamp || creatorsName || modifiersName || modifyTimestamp || objectClass || memberOf || uid || sn || schacPersonalUniqueCode || degreeCourse || schacDateOfBirth || schacPlaceOfBirth || mobile || mail || safetyTestDate || telegramID || telegramNickname || description"'), {'read', 'search', 'compare'}, f'groupdn = "ldap:///cn=HR,ou=Groups,{suffix}"'))
+	# limits possible objectClass values, but doesn't allow to add accounts with less than all these values
+	print_aci(make_aci('Allow HR to add and edit users', ('targetfilter="(&(uid=*)(objectClass=top)(objectClass=inetOrgPerson)(objectClass=organizationalPerson)(objectClass=person)(objectClass=schacPersonalCharacteristics)(objectClass=telegramAccount)(objectClass=weeeOpenPerson))"', 'targetattr = "objectClass ||  uid || sn || schacPersonalUniqueCode || degreeCourse || schacDateOfBirth || schacPlaceOfBirth || mobile || mail || safetyTestDate || telegramID || telegramNickname || description"'), {'add', 'write'}, f'groupdn = "ldap:///cn=HR,ou=Groups,{suffix}"'))
 	print_aci(make_aci('Allow HR to change users password', ('targetfilter = "(uid=*)"', 'targetattr = "userPassword"'), {'write'}, f'groupdn = "ldap:///cn=HR,ou=Groups,{suffix}"'))
-	print_aci(make_aci('Allow HR to add and remove users', ('targetfilter = "(uid=*)"',), {'add', 'delete'}, f'groupdn = "ldap:///cn=HR,ou=Groups,{suffix}"'))
-	print_aci(make_aci('Allow HR to read user groups via memberOf', ('targetfilter = "(uid=*)"', 'targetattr = "memberOf"'), {'read', 'search', 'compare'}, f'groupdn = "ldap:///cn=HR,ou=Groups,{suffix}"'))
 
 	print(f"""      -
         dn: "ou=Groups,{suffix}"
