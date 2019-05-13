@@ -67,9 +67,23 @@ def example_user():
 		('sn', [b'User']),
 		('mobile', [b'+39010101011011']),
 		('telegramID', [b'1337']),
-		('uid', [b'example.user']),
-		('userPassword', [
-			b'{PBKDF2_SHA256}AAAnENBOg9Pr7VfWGJEKpYaCNCvCTpe8xZAeCkcneca7GirKbHwLQ24j9I7u2c1vXSPnsWZzd4OoKETdAJZzxUhFJvlqBI7P71M7ts+t9QHJoo4Yx5TcSOCoz2zNGtnjlQqi+rptAG5yNmiYJ1jULvXPHkNtr6Ckkwr3SgcpKWpJDLGLXNuhJkww/jv7D0eC/I9jznkOO5lJwMBKmxuWwxLjFjJ7MK1YGFPpUkxZuam3iy2X6kmPEQXCZdhE9dgATjK5I2WlgQOAZ34HouJHxuzV83JG+SJnYpE5rzDfuSmhaCZfmwWQpZCPNU1QKx+CrAeUht/Vrk4iM7ScJM+si/eTOaKOCVGvpr2xZEvIy0xOXTAF6UW5Acos1a8jtKBJf4zmlsfKGByXQPNj38bd6CyVdKie1R6OT+YtPNEkmrcSJCNc'])
+		('uid', [b'example.user'])
+	]
+
+
+@pytest.fixture()
+def example_group():
+	return [
+		('objectClass', [b'top', b'organizationalunit']),
+		('cn', [b'Example Group'])
+	]
+
+
+@pytest.fixture()
+def empty_container():
+	return [
+		('objectClass', [b'top', b'inetOrgPerson']),
+		('cn', [b'Empty'])
 	]
 
 
@@ -229,7 +243,135 @@ def test_allow_read_kc():
 		assert expected == set(result[0][1].keys()), 'All expected attributes are present'
 
 
-def test_deny_add_user_kc(example_user):
-	with LdapConnection(f"cn=Keycloak,ou=Services,{SUFFIX}", "asd") as conn:
+@pytest.mark.parametrize("bind_dn", [f"cn=Keycloak,ou=Services,{SUFFIX}", f"uid=test.user,ou=People,{SUFFIX}"])
+def test_deny_add_user(bind_dn, example_user):
+	with LdapConnection(bind_dn, "asd") as conn:
 		with pytest.raises(ldap.INSUFFICIENT_ACCESS):
 			conn.add_s(f"uid=example.user,ou=People,{SUFFIX}", example_user)
+
+
+def test_allow_add_user_hr(example_user):
+	with LdapConnection(f"uid=test.hr,ou=People,{SUFFIX}", "asd") as conn:
+		conn.add_s(f"uid=example.user,ou=People,{SUFFIX}", example_user)
+		result = conn.search_s(f"uid=example.user,ou=People,{SUFFIX}", ldap.SCOPE_BASE, None, ['*'])
+		assert len(result) > 0, 'User has been added'
+
+
+@pytest.mark.parametrize("bind_dn", [f"cn=Keycloak,ou=Services,{SUFFIX}", f"uid=test.user,ou=People,{SUFFIX}"])
+def test_deny_delete_user(bind_dn):
+	with LdapConnection(bind_dn, "asd") as conn:
+		with pytest.raises(ldap.INSUFFICIENT_ACCESS):
+			conn.delete_s(f"uid=test2.user2,ou=People,{SUFFIX}")
+
+
+def test_allow_delete_user_hr():
+	with LdapConnection(f"uid=test.hr,ou=People,{SUFFIX}", "asd") as conn:
+		conn.delete_s(f"uid=test2.user2,ou=People,{SUFFIX}")
+		result = conn.search_s(f"uid=test2.user2,ou=People,{SUFFIX}", ldap.SCOPE_BASE, None, ['*'])
+		assert len(result) == 0, 'User is gone'
+
+
+@pytest.mark.parametrize("bind_dn", [f"cn=Keycloak,ou=Services,{SUFFIX}", f"uid=test.user,ou=People,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}"])
+def test_deny_add_group(bind_dn, example_group):
+	with LdapConnection(bind_dn, "asd") as conn:
+		with pytest.raises(ldap.INSUFFICIENT_ACCESS):
+			conn.add_s(f"cn=Example Group,ou=Groups,{SUFFIX}", example_group)
+
+
+@pytest.mark.parametrize("bind_dn", [f"cn=Keycloak,ou=Services,{SUFFIX}", f"uid=test.user,ou=People,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}"])
+def test_deny_delete_group(bind_dn):
+	with LdapConnection(bind_dn, "asd") as conn:
+		with pytest.raises(ldap.INSUFFICIENT_ACCESS):
+			conn.delete_s(f"cn=People,ou=Groups,{SUFFIX}")
+
+
+@pytest.mark.parametrize("bind_dn", [f"cn=Keycloak,ou=Services,{SUFFIX}", f"uid=test.user,ou=People,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}"])
+def test_deny_add_container(bind_dn, empty_container):
+	with LdapConnection(bind_dn, "asd") as conn:
+		with pytest.raises(ldap.INSUFFICIENT_ACCESS):
+			conn.add_s(f"cn=Empty,{SUFFIX}", empty_container)
+
+
+@pytest.mark.parametrize("bind_dn", [f"cn=Keycloak,ou=Services,{SUFFIX}", f"uid=test.user,ou=People,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}"])
+def test_deny_delete_container(bind_dn):
+	with LdapConnection(bind_dn, "asd") as conn:
+		with pytest.raises(ldap.INSUFFICIENT_ACCESS):
+			conn.delete_s(f"ou=People,{SUFFIX}")
+
+
+@pytest.mark.parametrize("bind_dn", [f"cn=Test,ou=Services,{SUFFIX}", f"uid=test.user,ou=People,{SUFFIX}"])
+def test_deny_read_group(bind_dn):
+	with LdapConnection(bind_dn, "asd") as conn:
+		result = conn.search_s(f"cn=Testers,ou=Groups,{SUFFIX}", ldap.SCOPE_BASE, None, ['ou', 'member'])
+		assert len(result[0][1]) == 0, 'No group details or members are visible'
+
+
+@pytest.mark.parametrize("bind_dn", [f"cn=Keycloak,ou=Services,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}"])
+def test_allow_read_group(bind_dn):
+	with LdapConnection(bind_dn, "asd") as conn:
+		result = conn.search_s(f"cn=Testers,ou=Groups,{SUFFIX}", ldap.SCOPE_BASE, None, ['ou', 'member'])
+		attributes = result[0][1]
+		assert len(attributes) > 0, 'Some attributes are found'
+		assert 'ou' in attributes, 'ou is readable'
+		assert 'member' in attributes, 'member is readable'
+		assert len(attributes['member']) > 0, 'Groups has some members'
+
+
+@pytest.mark.parametrize("bind_dn", [f"cn=Keycloak,ou=Services,{SUFFIX}", f"cn=Test,ou=Services,{SUFFIX}", f"uid=test.user,ou=People,{SUFFIX}"])
+def test_deny_add_to_group(bind_dn):
+	with LdapConnection(bind_dn, "asd") as conn:
+		with pytest.raises(ldap.INSUFFICIENT_ACCESS):
+			conn.modify_s(f"cn=Testers,ou=Groups,{SUFFIX}", [(ldap.MOD_ADD, 'member', bytes(f'uid=test.hr,ou=People,{SUFFIX}', 'utf8'))])
+
+
+@pytest.mark.parametrize("bind_dn", [f"cn=Keycloak,ou=Services,{SUFFIX}", f"cn=Test,ou=Services,{SUFFIX}", f"uid=test.user,ou=People,{SUFFIX}"])
+def test_deny_remove_from_group(bind_dn):
+	with LdapConnection(bind_dn, "asd") as conn:
+		with pytest.raises(ldap.INSUFFICIENT_ACCESS):
+			conn.modify_s(f"cn=Testers,ou=Groups,{SUFFIX}", [(ldap.MOD_DELETE, 'member', bytes(f'uid=test.user,ou=People,{SUFFIX}', 'utf8'))])
+
+
+@pytest.mark.parametrize("bind_dn", [f"uid=test.hr,ou=People,{SUFFIX}"])
+def test_allow_add_to_group(bind_dn):
+	target = f'uid=test.hr,ou=People,{SUFFIX}'
+	group = f"cn=Testers,ou=Groups,{SUFFIX}"
+
+	target_b = bytes(target, 'utf8')
+	group_b = bytes(group, 'utf8')
+	with LdapConnection(bind_dn, "asd") as conn:
+		result = conn.search_s(group, ldap.SCOPE_BASE, None, ['member'])
+		assert target_b not in result[0][1]['member'], 'User is not yet member in group'
+
+		result = conn.search_s(target, ldap.SCOPE_BASE, None, ['memberOf'])
+		assert 'memberOf' not in result[0][1] or group_b not in result[0][1]['memberOf'], 'User doesn\'t have memberOf attribute yet'
+
+		conn.modify_s(group, [(ldap.MOD_ADD, 'member', bytes(target, 'utf8'))])
+
+		result = conn.search_s(group, ldap.SCOPE_BASE, None, ['member'])
+		assert target_b in result[0][1]['member'], 'User is member in group'
+
+		result = conn.search_s(target, ldap.SCOPE_BASE, None, ['memberOf'])
+		assert group_b in result[0][1]['memberOf'], 'User has memberOf attribute'
+
+
+@pytest.mark.parametrize("bind_dn", [f"uid=test.hr,ou=People,{SUFFIX}"])
+def test_allow_remove_to_group(bind_dn):
+	target = f'uid=test.user,ou=People,{SUFFIX}'
+	group = f"cn=Testers,ou=Groups,{SUFFIX}"
+
+	target_b = bytes(target, 'utf8')
+	group_b = bytes(group, 'utf8')
+	with LdapConnection(bind_dn, "asd") as conn:
+		result = conn.search_s(group, ldap.SCOPE_BASE, None, ['member'])
+		assert target_b in result[0][1]['member'], 'User is member in group'
+
+		result = conn.search_s(target, ldap.SCOPE_BASE, None, ['memberOf'])
+		assert group_b in result[0][1]['memberOf'], 'User has memberOf attribute'
+
+		conn.modify_s(group, [(ldap.MOD_DELETE, 'member', bytes(target, 'utf8'))])
+
+		result = conn.search_s(group, ldap.SCOPE_BASE, None, ['member'])
+		assert target_b not in result[0][1]['member'], 'User is no longer member in group'
+
+		result = conn.search_s(target, ldap.SCOPE_BASE, None, ['memberOf'])
+		assert 'memberOf' not in result[0][1] or group_b not in result[0][1]['memberOf'], 'User doesn\'t have memberOf anymore'
