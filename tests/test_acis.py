@@ -57,6 +57,19 @@ def reset_database():
             conn.modify_s(dn, ldap.modlist.modifyModlist({}, values))
 
 
+@pytest.fixture()
+def example_user():
+    return [
+	    ('objectClass', [b'telegramAccount', b'schacPersonalCharacteristics', b'top', b'person', b'organizationalPerson', b'inetOrgPerson', b'weeeOpenPerson']),
+        ('cn', [b'Example User']),
+	    ('sn', [b'User']),
+	    ('mobile', [b'+39010101011011']),
+	    ('telegramID', [b'1337']),
+	    ('uid', [b'example.user']),
+	    ('userPassword', [b'{PBKDF2_SHA256}AAAnENBOg9Pr7VfWGJEKpYaCNCvCTpe8xZAeCkcneca7GirKbHwLQ24j9I7u2c1vXSPnsWZzd4OoKETdAJZzxUhFJvlqBI7P71M7ts+t9QHJoo4Yx5TcSOCoz2zNGtnjlQqi+rptAG5yNmiYJ1jULvXPHkNtr6Ckkwr3SgcpKWpJDLGLXNuhJkww/jv7D0eC/I9jznkOO5lJwMBKmxuWwxLjFjJ7MK1YGFPpUkxZuam3iy2X6kmPEQXCZdhE9dgATjK5I2WlgQOAZ34HouJHxuzV83JG+SJnYpE5rzDfuSmhaCZfmwWQpZCPNU1QKx+CrAeUht/Vrk4iM7ScJM+si/eTOaKOCVGvpr2xZEvIy0xOXTAF6UW5Acos1a8jtKBJf4zmlsfKGByXQPNj38bd6CyVdKie1R6OT+YtPNEkmrcSJCNc'])
+    ]
+
+
 class LdapConnection:
     def __init__(self, bind_dn, password):
         self.bind_dn = bind_dn
@@ -82,14 +95,16 @@ def test_deny_read_special():
         assert True, 'Test user can connect'
 
         result = conn.search_s(SUFFIX, ldap.SCOPE_SUBTREE, '(objectClass=*)', ['*'])
-        assert len(result) == 0, 'Test user can\'t search or view anything'
+        for dn, attributes in result:
+            assert set(attributes.keys()) == {'objectClass'}, 'Only objectClass is returned'
 
 
 def test_deny_self_special():
     test_dn = f"cn=Test,ou=Services,{SUFFIX}"
     with LdapConnection(test_dn, "asd") as conn:
         result = conn.search_s(test_dn, ldap.SCOPE_SUBTREE, '(objectClass=*)', ['*'])
-        assert len(result) == 0, 'Test user can\'t read self'
+        for dn, attributes in result:
+            assert set(attributes.keys()) == {'objectClass'}, 'Only objectClass is returned'
 
         with pytest.raises(ldap.INSUFFICIENT_ACCESS):
             conn.modify_s(test_dn, [(ldap.MOD_ADD, 'cn', b'testing that this value never appears')])
@@ -166,7 +181,7 @@ def test_allow_password_change_hr():
 
 def test_allow_read_hr():
     with LdapConnection(f"uid=test.hr,ou=People,{SUFFIX}", "asd") as conn:
-        result = conn.search_s(f"uid=test.user,ou=People,{SUFFIX}", ldap.SCOPE_BASE, None, ['*'])
+        result = conn.search_s(f"uid=test.user,ou=People,{SUFFIX}", ldap.SCOPE_BASE, None, ['*', '+'])
         assert len(result) > 0, 'User is readable'
         expected = {
             'memberOf',
@@ -174,7 +189,11 @@ def test_allow_read_hr():
             'sn',
             'mobile',
             'telegramID',
-            'uid'
+            'uid',
+            'creatorsName',
+            'createTimestamp',
+            'modifiersName',
+            'modifyTimestamp',
         }
         assert expected == set(result[0][1].keys()), 'All expected attributes are present'
 
@@ -187,12 +206,27 @@ def test_deny_password_read_hr():
 
 def test_allow_read_kc():
     with LdapConnection(f"cn=Keycloak,ou=Services,{SUFFIX}", "asd") as conn:
-        result = conn.search_s(f"uid=test.user,ou=People,{SUFFIX}", ldap.SCOPE_BASE, None, ['*'])
+        result = conn.search_s(f"uid=test.user,ou=People,{SUFFIX}", ldap.SCOPE_BASE, None, ['*', '+'])
         assert len(result) > 0, 'User is readable'
         expected = {
+            'modifyTimestamp',
+            'modifiersName',
+            'memberOf',
             'objectClass',
             'cn',
+            'telegramID',
             'uid',
-            'telegramID'
+            'creatorsName',
+            'createTimestamp',
+            'nsUniqueId',
+            'parentid',
+            'entryid',
+            'entrydn',
         }
         assert expected == set(result[0][1].keys()), 'All expected attributes are present'
+
+
+def test_deny_add_user_kc(example_user):
+    with LdapConnection(f"cn=Keycloak,ou=Services,{SUFFIX}", "asd") as conn:
+        with pytest.raises(ldap.INSUFFICIENT_ACCESS):
+            conn.add_s(f"uid=example.user,ou=People,{SUFFIX}", example_user)
