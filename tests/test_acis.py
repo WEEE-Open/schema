@@ -127,73 +127,68 @@ def test_deny_self_special():
 			conn.modify_s(test_dn, [(ldap.MOD_ADD, 'cn', b'testing that this value never appears')])
 
 
-def test_deny_password_change_special():
-	test_dn = f"cn=Test,ou=Services,{SUFFIX}"
-	with LdapConnection(test_dn, "asd") as conn:
-		with pytest.raises(ldap.INSUFFICIENT_ACCESS):
-			conn.modify_s(test_dn, [(ldap.MOD_REPLACE, 'userPassword', b'asd')])
-
-
-def test_allow_password_change_kc():
-	with LdapConnection(f"cn=Keycloak,ou=Services,{SUFFIX}", "asd") as conn:
+# HR, self and Keycloak can change passwords
+@pytest.mark.parametrize("bind_dn", [f"uid=test.user,ou=People,{SUFFIX}", f"cn=Keycloak,ou=Services,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}"])
+def test_allow_password_change(bind_dn):
+	with LdapConnection(bind_dn, "asd") as conn:
 		conn.modify_s(f"uid=test.user,ou=People,{SUFFIX}", [
-			(ldap.MOD_REPLACE, 'userPassword', b'asd')
+			(ldap.MOD_REPLACE, 'userPassword', b'asdasdasdasdasdasd')
 		])
 
 
-def test_deny_password_change_kc_self():
-	with LdapConnection(f"cn=Keycloak,ou=Services,{SUFFIX}", "asd") as conn:
+# Those who can change passwords, can't replace them with passwords that violate constraints
+@pytest.mark.parametrize("bind_dn", [f"uid=test.user,ou=People,{SUFFIX}", f"cn=Keycloak,ou=Services,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}"])
+def test_fail_password_change_constraint(bind_dn):
+	with LdapConnection(bind_dn, "asd") as conn:
+		with pytest.raises(ldap.CONSTRAINT_VIOLATION):
+			conn.modify_s(f"uid=test.user,ou=People,{SUFFIX}", [
+				(ldap.MOD_REPLACE, 'userPassword', b'a')
+			])
+
+
+@pytest.mark.parametrize("bind_dn", [f"uid=test2.user2,ou=People,{SUFFIX}", f"cn=Test,ou=Services,{SUFFIX}"])
+def test_deny_password_change(bind_dn):
+	with LdapConnection(bind_dn, "asd") as conn:
+		with pytest.raises(ldap.INSUFFICIENT_ACCESS):
+			conn.modify_s(f"uid=test.user,ou=People,{SUFFIX}", [
+				(ldap.MOD_REPLACE, 'userPassword', b'asdasdasdasdasdasd')
+			])
+
+
+@pytest.mark.parametrize("bind_dn", [f"uid=test.user,ou=People,{SUFFIX}", f"cn=Keycloak,ou=Services,{SUFFIX}", f"cn=Test,ou=Services,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}"])
+def test_deny_password_change_kc_service(bind_dn):
+	with LdapConnection(bind_dn, "asd") as conn:
 		with pytest.raises(ldap.INSUFFICIENT_ACCESS):
 			conn.modify_s(f"cn=Keycloak,ou=Services,{SUFFIX}", [
 				(ldap.MOD_REPLACE, 'userPassword', b'lol')
 			])
 
 
-def test_deny_password_change_kc_other():
-	with LdapConnection(f"cn=Keycloak,ou=Services,{SUFFIX}", "asd") as conn:
+@pytest.mark.parametrize("bind_dn", [f"uid=test.user,ou=People,{SUFFIX}", f"cn=Keycloak,ou=Services,{SUFFIX}", f"cn=Test,ou=Services,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}"])
+def test_deny_password_change_service(bind_dn):
+	with LdapConnection(bind_dn, "asd") as conn:
 		with pytest.raises(ldap.INSUFFICIENT_ACCESS):
 			conn.modify_s(f"cn=Test,ou=Services,{SUFFIX}", [
 				(ldap.MOD_REPLACE, 'userPassword', b'lol')
 			])
 
 
-def test_deny_password_change_kc_ou():
-	with LdapConnection(f"cn=Keycloak,ou=Services,{SUFFIX}", "asd") as conn:
+@pytest.mark.parametrize("bind_dn", [f"uid=test.user,ou=People,{SUFFIX}", f"cn=Keycloak,ou=Services,{SUFFIX}", f"cn=Test,ou=Services,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}"])
+def test_deny_password_change_ou(bind_dn):
+	with LdapConnection(bind_dn, "asd") as conn:
 		with pytest.raises(ldap.INSUFFICIENT_ACCESS):
 			conn.modify_s(f"ou=Services,{SUFFIX}", [
 				(ldap.MOD_REPLACE, 'userPassword', b'lol')
 			])
 
 
-def test_allow_password_change_user_self():
+def test_deny_info_change_user_self():
 	test_dn = f"uid=test.user,ou=People,{SUFFIX}"
 	with LdapConnection(test_dn, "asd") as conn:
-		conn.modify_s(test_dn, [
-			(ldap.MOD_REPLACE, 'userPassword', b'asd')
-		])
-
-
-def test_deny_password_change_user_other():
-	with LdapConnection(f"uid=test.user,ou=People,{SUFFIX}", "asd") as conn:
 		with pytest.raises(ldap.INSUFFICIENT_ACCESS):
-			conn.modify_s(f"uid=test2.user2,ou=People,{SUFFIX}", [
-				(ldap.MOD_REPLACE, 'userPassword', b'asd')
+			conn.modify_s(test_dn, [
+				(ldap.MOD_REPLACE, 'mobile', b'+392222222')
 			])
-
-
-def test_allow_info_change_user_self():
-	test_dn = f"uid=test.user,ou=People,{SUFFIX}"
-	with LdapConnection(test_dn, "asd") as conn:
-		conn.modify_s(test_dn, [
-			(ldap.MOD_REPLACE, 'userPassword', b'asd')
-		])
-
-
-def test_allow_password_change_hr():
-	with LdapConnection(f"uid=test.hr,ou=People,{SUFFIX}", "asd") as conn:
-		conn.modify_s(f"uid=test.user,ou=People,{SUFFIX}", [
-			(ldap.MOD_REPLACE, 'userPassword', b'asd')
-		])
 
 
 def test_allow_read_hr():
