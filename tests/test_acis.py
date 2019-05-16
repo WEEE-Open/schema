@@ -72,6 +72,18 @@ def example_user():
 
 
 @pytest.fixture()
+def example_user_with_password(example_user):
+	example_user.append(('userPassword', [b'{PBKDF2_SHA256}AAAnENBOg9Pr7VfWGJEKpYaCNCvCTpe8xZAeCkcneca7Gir'
+								b'KbHwLQ24j9I7u2c1vXSPnsWZzd4OoKETdAJZzxUhFJvlqBI7P71M7ts+t9QHJoo4Yx5TcSOCoz2'
+								b'zNGtnjlQqi+rptAG5yNmiYJ1jULvXPHkNtr6Ckkwr3SgcpKWpJDLGLXNuhJkww/jv7D0eC/I9jz'
+								b'nkOO5lJwMBKmxuWwxLjFjJ7MK1YGFPpUkxZuam3iy2X6kmPEQXCZdhE9dgATjK5I2WlgQOAZ34H'
+								b'ouJHxuzV83JG+SJnYpE5rzDfuSmhaCZfmwWQpZCPNU1QKx+CrAeUht/Vrk4iM7ScJM+si/eTOaK'
+								b'OCVGvpr2xZEvIy0xOXTAF6UW5Acos1a8jtKBJf4zmlsfKGByXQPNj38bd6CyVdKie1R6OT+YtPN'
+								b'EkmrcSJCNc']))
+	return example_user
+
+
+@pytest.fixture()
 def example_group():
 	return [
 		('objectClass', [b'top', b'organizationalunit']),
@@ -370,3 +382,20 @@ def test_allow_remove_to_group(bind_dn):
 
 		result = conn.search_s(target, ldap.SCOPE_BASE, None, ['memberOf'])
 		assert 'memberOf' not in result[0][1] or group_b not in result[0][1]['memberOf'], 'User doesn\'t have memberOf anymore'
+
+
+def test_password_lockout(example_user_with_password):
+	with LdapConnection(f"cn=Directory Manager", "secret1") as conn:
+		conn.add_s(f"uid=example.user,ou=People,{SUFFIX}", example_user_with_password)
+		result = conn.search_s(f"uid=example.user,ou=People,{SUFFIX}", ldap.SCOPE_BASE, None, ['*'])
+		assert len(result) > 0, 'User has been added'
+
+	attempts = 0
+	with pytest.raises(ldap.CONSTRAINT_VIOLATION):
+		for i in range(1, 20):
+			try:
+				with LdapConnection(f"uid=example.user,ou=People,{SUFFIX}", "invalid"):
+					pass
+			except ldap.INVALID_CREDENTIALS:
+				attempts += 1
+	assert attempts == 5, 'Failure after 5 attempts'
