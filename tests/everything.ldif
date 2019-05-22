@@ -23,11 +23,11 @@ description: People who can manage HR entries
 member: uid=test.hr,ou=People,dc=example,dc=local
 ou: groups
 
-dn: cn=Keycloak,ou=Services,dc=example,dc=local
+dn: cn=WSO2IS,ou=Services,dc=example,dc=local
 objectClass: simpleSecurityObject
 objectClass: top
 objectClass: device
-cn: Keycloak
+cn: WSO2IS
 userPassword: {PBKDF2_SHA256}AAAnENBOg9Pr7VfWGJEKpYaCNCvCTpe8xZAeCkcneca7Gir
  KbHwLQ24j9I7u2c1vXSPnsWZzd4OoKETdAJZzxUhFJvlqBI7P71M7ts+t9QHJoo4Yx5TcSOCoz2
  zNGtnjlQqi+rptAG5yNmiYJ1jULvXPHkNtr6Ckkwr3SgcpKWpJDLGLXNuhJkww/jv7D0eC/I9jz

@@ -139,8 +139,8 @@ def test_deny_self_special():
 			conn.modify_s(test_dn, [(ldap.MOD_ADD, 'cn', b'testing that this value never appears')])
 
 
-# HR, self and Keycloak can change passwords
-@pytest.mark.parametrize("bind_dn", [f"uid=test.user,ou=People,{SUFFIX}", f"cn=Keycloak,ou=Services,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}"])
+# HR, self and WSO2IS can change passwords
+@pytest.mark.parametrize("bind_dn", [f"uid=test.user,ou=People,{SUFFIX}", f"cn=WSO2IS,ou=Services,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}"])
 def test_allow_password_change(bind_dn):
 	with LdapConnection(bind_dn, "asd") as conn:
 		conn.modify_s(f"uid=test.user,ou=People,{SUFFIX}", [
@@ -149,7 +149,7 @@ def test_allow_password_change(bind_dn):
 
 
 # Those who can change passwords, can't replace them with passwords that violate constraints
-@pytest.mark.parametrize("bind_dn", [f"uid=test.user,ou=People,{SUFFIX}", f"cn=Keycloak,ou=Services,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}"])
+@pytest.mark.parametrize("bind_dn", [f"uid=test.user,ou=People,{SUFFIX}", f"cn=WSO2IS,ou=Services,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}"])
 def test_fail_password_change_constraint(bind_dn):
 	with LdapConnection(bind_dn, "asd") as conn:
 		with pytest.raises(ldap.CONSTRAINT_VIOLATION):
@@ -167,16 +167,16 @@ def test_deny_password_change(bind_dn):
 			])
 
 
-@pytest.mark.parametrize("bind_dn", [f"uid=test.user,ou=People,{SUFFIX}", f"cn=Keycloak,ou=Services,{SUFFIX}", f"cn=Test,ou=Services,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}"])
-def test_deny_password_change_kc_service(bind_dn):
+@pytest.mark.parametrize("bind_dn", [f"uid=test.user,ou=People,{SUFFIX}", f"cn=WSO2IS,ou=Services,{SUFFIX}", f"cn=Test,ou=Services,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}"])
+def test_deny_password_change_sso_service(bind_dn):
 	with LdapConnection(bind_dn, "asd") as conn:
 		with pytest.raises(ldap.INSUFFICIENT_ACCESS):
-			conn.modify_s(f"cn=Keycloak,ou=Services,{SUFFIX}", [
+			conn.modify_s(f"cn=WSO2IS,ou=Services,{SUFFIX}", [
 				(ldap.MOD_REPLACE, 'userPassword', b'lol')
 			])
 
 
-@pytest.mark.parametrize("bind_dn", [f"uid=test.user,ou=People,{SUFFIX}", f"cn=Keycloak,ou=Services,{SUFFIX}", f"cn=Test,ou=Services,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}"])
+@pytest.mark.parametrize("bind_dn", [f"uid=test.user,ou=People,{SUFFIX}", f"cn=WSO2IS,ou=Services,{SUFFIX}", f"cn=Test,ou=Services,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}"])
 def test_deny_password_change_service(bind_dn):
 	with LdapConnection(bind_dn, "asd") as conn:
 		with pytest.raises(ldap.INSUFFICIENT_ACCESS):
@@ -185,7 +185,7 @@ def test_deny_password_change_service(bind_dn):
 			])
 
 
-@pytest.mark.parametrize("bind_dn", [f"uid=test.user,ou=People,{SUFFIX}", f"cn=Keycloak,ou=Services,{SUFFIX}", f"cn=Test,ou=Services,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}"])
+@pytest.mark.parametrize("bind_dn", [f"uid=test.user,ou=People,{SUFFIX}", f"cn=WSO2IS,ou=Services,{SUFFIX}", f"cn=Test,ou=Services,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}"])
 def test_deny_password_change_ou(bind_dn):
 	with LdapConnection(bind_dn, "asd") as conn:
 		with pytest.raises(ldap.INSUFFICIENT_ACCESS):
@@ -228,8 +228,8 @@ def test_deny_password_read_hr():
 		assert len(result[0][1]) == 0, 'No attributes returned'
 
 
-def test_allow_read_kc():
-	with LdapConnection(f"cn=Keycloak,ou=Services,{SUFFIX}", "asd") as conn:
+def test_allow_read_sso():
+	with LdapConnection(f"cn=WSO2IS,ou=Services,{SUFFIX}", "asd") as conn:
 		result = conn.search_s(f"uid=test.user,ou=People,{SUFFIX}", ldap.SCOPE_BASE, None, ['*', '+'])
 		assert len(result) > 0, 'User is readable'
 		expected = {
@@ -250,7 +250,7 @@ def test_allow_read_kc():
 		assert expected == set(result[0][1].keys()), 'All expected attributes are present'
 
 
-@pytest.mark.parametrize("bind_dn", [f"cn=Keycloak,ou=Services,{SUFFIX}", f"uid=test.user,ou=People,{SUFFIX}"])
+@pytest.mark.parametrize("bind_dn", [f"cn=WSO2IS,ou=Services,{SUFFIX}", f"uid=test.user,ou=People,{SUFFIX}"])
 def test_deny_add_user(bind_dn, example_user):
 	with LdapConnection(bind_dn, "asd") as conn:
 		with pytest.raises(ldap.INSUFFICIENT_ACCESS):
@@ -264,7 +264,7 @@ def test_allow_add_user_hr(example_user):
 		assert len(result) > 0, 'User has been added'
 
 
-@pytest.mark.parametrize("bind_dn", [f"cn=Keycloak,ou=Services,{SUFFIX}", f"uid=test.user,ou=People,{SUFFIX}"])
+@pytest.mark.parametrize("bind_dn", [f"cn=WSO2IS,ou=Services,{SUFFIX}", f"uid=test.user,ou=People,{SUFFIX}"])
 def test_deny_delete_user(bind_dn):
 	with LdapConnection(bind_dn, "asd") as conn:
 		with pytest.raises(ldap.INSUFFICIENT_ACCESS):
@@ -278,28 +278,28 @@ def test_allow_delete_user_hr():
 		assert len(result) == 0, 'User is gone'
 
 
-@pytest.mark.parametrize("bind_dn", [f"cn=Keycloak,ou=Services,{SUFFIX}", f"uid=test.user,ou=People,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}"])
+@pytest.mark.parametrize("bind_dn", [f"cn=WSO2IS,ou=Services,{SUFFIX}", f"uid=test.user,ou=People,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}"])
 def test_deny_add_group(bind_dn, example_group):
 	with LdapConnection(bind_dn, "asd") as conn:
 		with pytest.raises(ldap.INSUFFICIENT_ACCESS):
 			conn.add_s(f"cn=Example Group,ou=Groups,{SUFFIX}", example_group)
 
 
-@pytest.mark.parametrize("bind_dn", [f"cn=Keycloak,ou=Services,{SUFFIX}", f"uid=test.user,ou=People,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}"])
+@pytest.mark.parametrize("bind_dn", [f"cn=WSO2IS,ou=Services,{SUFFIX}", f"uid=test.user,ou=People,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}"])
 def test_deny_delete_group(bind_dn):
 	with LdapConnection(bind_dn, "asd") as conn:
 		with pytest.raises(ldap.INSUFFICIENT_ACCESS):
 			conn.delete_s(f"cn=People,ou=Groups,{SUFFIX}")
 
 
-@pytest.mark.parametrize("bind_dn", [f"cn=Keycloak,ou=Services,{SUFFIX}", f"uid=test.user,ou=People,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}"])
+@pytest.mark.parametrize("bind_dn", [f"cn=WSO2IS,ou=Services,{SUFFIX}", f"uid=test.user,ou=People,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}"])
 def test_deny_add_container(bind_dn, empty_container):
 	with LdapConnection(bind_dn, "asd") as conn:
 		with pytest.raises(ldap.INSUFFICIENT_ACCESS):
 			conn.add_s(f"cn=Empty,{SUFFIX}", empty_container)
 
 
-@pytest.mark.parametrize("bind_dn", [f"cn=Keycloak,ou=Services,{SUFFIX}", f"uid=test.user,ou=People,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}"])
+@pytest.mark.parametrize("bind_dn", [f"cn=WSO2IS,ou=Services,{SUFFIX}", f"uid=test.user,ou=People,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}"])
 def test_deny_delete_container(bind_dn):
 	with LdapConnection(bind_dn, "asd") as conn:
 		with pytest.raises(ldap.INSUFFICIENT_ACCESS):
@@ -313,7 +313,7 @@ def test_deny_read_group(bind_dn):
 		assert len(result[0][1]) == 0, 'No group details or members are visible'
 
 
-@pytest.mark.parametrize("bind_dn", [f"cn=Keycloak,ou=Services,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}"])
+@pytest.mark.parametrize("bind_dn", [f"cn=WSO2IS,ou=Services,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}"])
 def test_allow_read_group(bind_dn):
 	with LdapConnection(bind_dn, "asd") as conn:
 		result = conn.search_s(f"cn=Testers,ou=Groups,{SUFFIX}", ldap.SCOPE_BASE, None, ['ou', 'member'])
@@ -324,14 +324,14 @@ def test_allow_read_group(bind_dn):
 		assert len(attributes['member']) > 0, 'Groups has some members'
 
 
-@pytest.mark.parametrize("bind_dn", [f"cn=Keycloak,ou=Services,{SUFFIX}", f"cn=Test,ou=Services,{SUFFIX}", f"uid=test.user,ou=People,{SUFFIX}"])
+@pytest.mark.parametrize("bind_dn", [f"cn=WSO2IS,ou=Services,{SUFFIX}", f"cn=Test,ou=Services,{SUFFIX}", f"uid=test.user,ou=People,{SUFFIX}"])
 def test_deny_add_to_group(bind_dn):
 	with LdapConnection(bind_dn, "asd") as conn:
 		with pytest.raises(ldap.INSUFFICIENT_ACCESS):
 			conn.modify_s(f"cn=Testers,ou=Groups,{SUFFIX}", [(ldap.MOD_ADD, 'member', bytes(f'uid=test.hr,ou=People,{SUFFIX}', 'utf8'))])
 
 
-@pytest.mark.parametrize("bind_dn", [f"cn=Keycloak,ou=Services,{SUFFIX}", f"cn=Test,ou=Services,{SUFFIX}", f"uid=test.user,ou=People,{SUFFIX}"])
+@pytest.mark.parametrize("bind_dn", [f"cn=WSO2IS,ou=Services,{SUFFIX}", f"cn=Test,ou=Services,{SUFFIX}", f"uid=test.user,ou=People,{SUFFIX}"])
 def test_deny_remove_from_group(bind_dn):
 	with LdapConnection(bind_dn, "asd") as conn:
 		with pytest.raises(ldap.INSUFFICIENT_ACCESS):

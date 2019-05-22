@@ -36,8 +36,8 @@ def acis():
 	print(f"""      -
         dn: "ou=People,{suffix}"
         acis:""")
-	print_aci(make_aci('Allow Keycloak to read users', ('targetfilter = "(uid=*)"', 'targetattr = "objectClass || memberOf || dn || cn || uid || telegramID || createTimestamp || creatorsName || entrydn || entryid || hasSubordinates || modifiersName || modifyTimestamp || nsUniqueId || numSubordinates || parentid || subschemaSubentry"'), {'read', 'search', 'compare'}, f'userdn = "ldap:///cn=Keycloak,ou=Services,{suffix}"'))
-	print_aci(make_aci('Allow Keycloak to change passwords', ('targetfilter = "(uid=*)"', 'targetattr = "userPassword"'), {'write'}, f'userdn = "ldap:///cn=Keycloak,ou=Services,{suffix}"'))
+	print_aci(make_aci('Allow WSO2IS to read users', ('targetfilter = "(uid=*)"', 'targetattr = "objectClass || memberOf || dn || cn || uid || telegramID || createTimestamp || creatorsName || entrydn || entryid || hasSubordinates || modifiersName || modifyTimestamp || nsUniqueId || numSubordinates || parentid || subschemaSubentry"'), {'read', 'search', 'compare'}, f'userdn = "ldap:///cn=WSO2IS,ou=Services,{suffix}"'))
+	print_aci(make_aci('Allow WSO2IS to change passwords', ('targetfilter = "(uid=*)"', 'targetattr = "userPassword"'), {'write'}, f'userdn = "ldap:///cn=WSO2IS,ou=Services,{suffix}"'))
 	print_aci(make_aci('Allow users to change their password', ('targetfilter = "(uid=*)"', 'targetattr = "userPassword"'), {'write'}, f'userdn = "ldap:///self"'))
 
 	print_aci(make_aci('Allow HR to read users', ('targetfilter = "(uid=*)"', 'targetattr = "createTimestamp || creatorsName || modifiersName || modifyTimestamp || objectClass || memberOf || uid || sn || schacPersonalUniqueCode || degreeCourse || schacDateOfBirth || schacPlaceOfBirth || mobile || mail || safetyTestDate || telegramID || telegramNickname || description"'), {'read', 'search', 'compare'}, f'groupdn = "ldap:///cn=HR,ou=Groups,{suffix}"'))
@@ -48,7 +48,7 @@ def acis():
 	print(f"""      -
         dn: "ou=Groups,{suffix}"
         acis:""")
-	print_aci(make_aci('Allow Keycloak to read groups', ('targetfilter = "(cn=*)"', 'targetattr = "objectClass || cn || ou || description || member || uniqueMember  || createTimestamp || creatorsName || entrydn || entryid || hasSubordinates || modifiersName || modifyTimestamp || nsUniqueId || numSubordinates || parentid || subschemaSubentry"'), {'read', 'search', 'compare'}, f'userdn = "ldap:///cn=Keycloak,ou=Services,{suffix}"'))
+	print_aci(make_aci('Allow WSO2IS to read groups', ('targetfilter = "(cn=*)"', 'targetattr = "objectClass || cn || ou || description || member || uniqueMember  || createTimestamp || creatorsName || entrydn || entryid || hasSubordinates || modifiersName || modifyTimestamp || nsUniqueId || numSubordinates || parentid || subschemaSubentry"'), {'read', 'search', 'compare'}, f'userdn = "ldap:///cn=WSO2IS,ou=Services,{suffix}"'))
 	print_aci(make_aci('Allow HR to read groups', ('targetfilter = "(cn=*)"', 'targetattr = "objectClass || cn || ou || description || member || uniqueMember"',), {'read', 'search', 'compare'}, f'groupdn = "ldap:///cn=HR,ou=Groups,{suffix}"'))
 	print_aci(make_aci('Allow HR to add and remove people from groups', ('targetfilter = "(cn=*)"', 'targetattr = "member || uniqueMember"',), {'write'}, f'groupdn = "ldap:///cn=HR,ou=Groups,{suffix}"'))
 
