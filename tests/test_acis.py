@@ -6,7 +6,7 @@ from ldap.modlist import addModlist
 import pytest
 
 
-SUFFIX = 'dc=example,dc=local'
+SUFFIX = 'dc=sso,dc=local'
 
 
 class MyLDIFWriter(ldif.LDIFParser):
@@ -17,6 +17,12 @@ class MyLDIFWriter(ldif.LDIFParser):
 	def handle(self, dn, entry):
 		addthis = addModlist(entry)
 		self.conn.add_s(dn, addthis)
+
+
+def recursive_delete_subtree(conn: ldap.ldapobject.SimpleLDAPObject, base_dn: str):
+	search = conn.search_s(base_dn, ldap.SCOPE_ONELEVEL)
+	for dn, _ in search:
+		recursive_delete(conn, dn)
 
 
 # https://stackoverflow.com/a/29371688
@@ -41,11 +47,11 @@ def reset_database():
 			f'ou=Services,{SUFFIX}'
 		)
 
-		acis = []
+		# acis = []
 		for thing in things:
 			try:
-				acis.append(save_acis(conn, thing))
-				recursive_delete(conn, thing)
+				# acis.append(save_acis(conn, thing))
+				recursive_delete_subtree(conn, thing)
 			except ldap.NO_SUCH_OBJECT:
 				pass
 
@@ -53,8 +59,8 @@ def reset_database():
 			parser = MyLDIFWriter(f, conn)
 			parser.parse()
 
-		for dn, values in zip(things, acis):
-			conn.modify_s(dn, ldap.modlist.modifyModlist({}, values))
+		# for dn, values in zip(things, acis):
+		# 	conn.modify_s(dn, ldap.modlist.modifyModlist({}, values))
 
 
 @pytest.fixture()
@@ -105,7 +111,7 @@ class LdapConnection:
 		self.password = password
 
 	def __enter__(self):
-		self.conn = ldap.initialize('ldap://ldap1.example.local:389')
+		self.conn = ldap.initialize('ldap://ldap1.sso.local:389')
 
 		self.conn.protocol_version = ldap.VERSION3
 		# l.set_option(ldap.OPT_X_TLS, 1)
@@ -139,8 +145,8 @@ def test_deny_self_special():
 			conn.modify_s(test_dn, [(ldap.MOD_ADD, 'cn', b'testing that this value never appears')])
 
 
-# HR, self and WSO2IS can change passwords
-@pytest.mark.parametrize("bind_dn", [f"uid=test.user,ou=People,{SUFFIX}", f"cn=WSO2IS,ou=Services,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}"])
+# Crauto can change passwords
+@pytest.mark.parametrize("bind_dn", [f"cn=Crauto,ou=Services,{SUFFIX}"])
 def test_allow_password_change(bind_dn):
 	with LdapConnection(bind_dn, "asd") as conn:
 		conn.modify_s(f"uid=test.user,ou=People,{SUFFIX}", [
@@ -149,7 +155,7 @@ def test_allow_password_change(bind_dn):
 
 
 # Those who can change passwords, can't replace them with passwords that violate constraints
-@pytest.mark.parametrize("bind_dn", [f"uid=test.user,ou=People,{SUFFIX}", f"cn=WSO2IS,ou=Services,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}"])
+@pytest.mark.parametrize("bind_dn", [f"cn=Crauto,ou=Services,{SUFFIX}"])
 def test_fail_password_change_constraint(bind_dn):
 	with LdapConnection(bind_dn, "asd") as conn:
 		with pytest.raises(ldap.CONSTRAINT_VIOLATION):
@@ -158,7 +164,7 @@ def test_fail_password_change_constraint(bind_dn):
 			])
 
 
-@pytest.mark.parametrize("bind_dn", [f"uid=test2.user2,ou=People,{SUFFIX}", f"cn=Test,ou=Services,{SUFFIX}"])
+@pytest.mark.parametrize("bind_dn", [f"uid=test2.user2,ou=People,{SUFFIX}", f"cn=Test,ou=Services,{SUFFIX}", f"uid=test.user,ou=People,{SUFFIX}", f"cn=WSO2IS,ou=Services,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}"])
 def test_deny_password_change(bind_dn):
 	with LdapConnection(bind_dn, "asd") as conn:
 		with pytest.raises(ldap.INSUFFICIENT_ACCESS):
@@ -202,28 +208,34 @@ def test_deny_info_change_user_self():
 				(ldap.MOD_REPLACE, 'mobile', b'+392222222')
 			])
 
+def test_allow_info_change_user_self():
+	test_dn = f"uid=test.user,ou=People,{SUFFIX}"
+	with LdapConnection(test_dn, "asd") as conn:
+		with pytest.raises(ldap.INSUFFICIENT_ACCESS):
+			conn.modify_s(test_dn, [
+				(ldap.MOD_REPLACE, 'mobile', b'+392222222')
+			])
 
 def test_allow_read_hr():
-	with LdapConnection(f"uid=test.hr,ou=People,{SUFFIX}", "asd") as conn:
+	with LdapConnection(f"cn=Crauto,ou=Services,{SUFFIX}", "asd") as conn:
 		result = conn.search_s(f"uid=test.user,ou=People,{SUFFIX}", ldap.SCOPE_BASE, None, ['*', '+'])
 		assert len(result) > 0, 'User is readable'
 		expected = {
 			'memberOf',
 			'objectClass',
+			'cn',
 			'sn',
 			'mobile',
 			'telegramID',
 			'uid',
-			'creatorsName',
 			'createTimestamp',
-			'modifiersName',
 			'modifyTimestamp',
 		}
 		assert expected == set(result[0][1].keys()), 'All expected attributes are present'
 
 
-def test_deny_password_read_hr():
-	with LdapConnection(f"uid=test.hr,ou=People,{SUFFIX}", "asd") as conn:
+def test_deny_password_read_crauto():
+	with LdapConnection(f"cn=Crauto,ou=Services,{SUFFIX}", "asd") as conn:
 		result = conn.search_s(f"uid=test.user,ou=People,{SUFFIX}", ldap.SCOPE_BASE, None, ['userPassword'])
 		assert len(result[0][1]) == 0, 'No attributes returned'
 
@@ -238,7 +250,6 @@ def test_allow_read_sso():
 			'memberOf',
 			'objectClass',
 			'cn',
-			'telegramID',
 			'uid',
 			'creatorsName',
 			'createTimestamp',
@@ -257,8 +268,8 @@ def test_deny_add_user(bind_dn, example_user):
 			conn.add_s(f"uid=example.user,ou=People,{SUFFIX}", example_user)
 
 
-def test_allow_add_user_hr(example_user):
-	with LdapConnection(f"uid=test.hr,ou=People,{SUFFIX}", "asd") as conn:
+def test_allow_add_user_crauto(example_user):
+	with LdapConnection(f"cn=Crauto,ou=Services,{SUFFIX}", "asd") as conn:
 		conn.add_s(f"uid=example.user,ou=People,{SUFFIX}", example_user)
 		result = conn.search_s(f"uid=example.user,ou=People,{SUFFIX}", ldap.SCOPE_BASE, None, ['*'])
 		assert len(result) > 0, 'User has been added'
@@ -271,35 +282,35 @@ def test_deny_delete_user(bind_dn):
 			conn.delete_s(f"uid=test2.user2,ou=People,{SUFFIX}")
 
 
-def test_allow_delete_user_hr():
-	with LdapConnection(f"uid=test.hr,ou=People,{SUFFIX}", "asd") as conn:
+def test_allow_delete_user_crauto():
+	with LdapConnection(f"cn=Crauto,ou=Services,{SUFFIX}", "asd") as conn:
 		conn.delete_s(f"uid=test2.user2,ou=People,{SUFFIX}")
 		result = conn.search_s(f"uid=test2.user2,ou=People,{SUFFIX}", ldap.SCOPE_BASE, None, ['*'])
 		assert len(result) == 0, 'User is gone'
 
 
-@pytest.mark.parametrize("bind_dn", [f"cn=WSO2IS,ou=Services,{SUFFIX}", f"uid=test.user,ou=People,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}"])
+@pytest.mark.parametrize("bind_dn", [f"cn=Crauto,ou=Services,{SUFFIX}", f"cn=WSO2IS,ou=Services,{SUFFIX}", f"uid=test.user,ou=People,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}"])
 def test_deny_add_group(bind_dn, example_group):
 	with LdapConnection(bind_dn, "asd") as conn:
 		with pytest.raises(ldap.INSUFFICIENT_ACCESS):
 			conn.add_s(f"cn=Example Group,ou=Groups,{SUFFIX}", example_group)
 
 
-@pytest.mark.parametrize("bind_dn", [f"cn=WSO2IS,ou=Services,{SUFFIX}", f"uid=test.user,ou=People,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}"])
+@pytest.mark.parametrize("bind_dn", [f"cn=Crauto,ou=Services,{SUFFIX}", f"cn=WSO2IS,ou=Services,{SUFFIX}", f"uid=test.user,ou=People,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}"])
 def test_deny_delete_group(bind_dn):
 	with LdapConnection(bind_dn, "asd") as conn:
 		with pytest.raises(ldap.INSUFFICIENT_ACCESS):
 			conn.delete_s(f"cn=People,ou=Groups,{SUFFIX}")
 
 
-@pytest.mark.parametrize("bind_dn", [f"cn=WSO2IS,ou=Services,{SUFFIX}", f"uid=test.user,ou=People,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}"])
+@pytest.mark.parametrize("bind_dn", [f"cn=Crauto,ou=Services,{SUFFIX}", f"cn=WSO2IS,ou=Services,{SUFFIX}", f"uid=test.user,ou=People,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}"])
 def test_deny_add_container(bind_dn, empty_container):
 	with LdapConnection(bind_dn, "asd") as conn:
 		with pytest.raises(ldap.INSUFFICIENT_ACCESS):
 			conn.add_s(f"cn=Empty,{SUFFIX}", empty_container)
 
 
-@pytest.mark.parametrize("bind_dn", [f"cn=WSO2IS,ou=Services,{SUFFIX}", f"uid=test.user,ou=People,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}"])
+@pytest.mark.parametrize("bind_dn", [f"cn=Crauto,ou=Services,{SUFFIX}", f"cn=WSO2IS,ou=Services,{SUFFIX}", f"uid=test.user,ou=People,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}"])
 def test_deny_delete_container(bind_dn):
 	with LdapConnection(bind_dn, "asd") as conn:
 		with pytest.raises(ldap.INSUFFICIENT_ACCESS):
@@ -313,7 +324,7 @@ def test_deny_read_group(bind_dn):
 		assert len(result[0][1]) == 0, 'No group details or members are visible'
 
 
-@pytest.mark.parametrize("bind_dn", [f"cn=WSO2IS,ou=Services,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}"])
+@pytest.mark.parametrize("bind_dn", [f"cn=Crauto,ou=Services,{SUFFIX}", f"cn=WSO2IS,ou=Services,{SUFFIX}"])
 def test_allow_read_group(bind_dn):
 	with LdapConnection(bind_dn, "asd") as conn:
 		result = conn.search_s(f"cn=Testers,ou=Groups,{SUFFIX}", ldap.SCOPE_BASE, None, ['ou', 'member'])
@@ -338,7 +349,7 @@ def test_deny_remove_from_group(bind_dn):
 			conn.modify_s(f"cn=Testers,ou=Groups,{SUFFIX}", [(ldap.MOD_DELETE, 'member', bytes(f'uid=test.user,ou=People,{SUFFIX}', 'utf8'))])
 
 
-@pytest.mark.parametrize("bind_dn", [f"uid=test.hr,ou=People,{SUFFIX}"])
+@pytest.mark.parametrize("bind_dn", [f"cn=Crauto,ou=Services,{SUFFIX}"])
 def test_allow_add_to_group(bind_dn):
 	target = f'uid=test.hr,ou=People,{SUFFIX}'
 	group = f"cn=Testers,ou=Groups,{SUFFIX}"
@@ -361,7 +372,7 @@ def test_allow_add_to_group(bind_dn):
 		assert group_b in result[0][1]['memberOf'], 'User has memberOf attribute'
 
 
-@pytest.mark.parametrize("bind_dn", [f"uid=test.hr,ou=People,{SUFFIX}"])
+@pytest.mark.parametrize("bind_dn", [f"cn=Crauto,ou=Services,{SUFFIX}"])
 def test_allow_remove_to_group(bind_dn):
 	target = f'uid=test.user,ou=People,{SUFFIX}'
 	group = f"cn=Testers,ou=Groups,{SUFFIX}"

@@ -1,29 +1,43 @@
 version: 1
 
-dn: ou=Groups,dc=example,dc=local
-objectClass: organizationalunit
-objectClass: top
-ou: Groups
+#dn: ou=Groups,dc=sso,dc=local
+#objectClass: organizationalunit
+#objectClass: top
+#ou: Groups
 
-dn: ou=People,dc=example,dc=local
-objectClass: organizationalunit
-objectClass: top
-ou: People
+#dn: ou=People,dc=sso,dc=local
+#objectClass: organizationalunit
+#objectClass: top
+#ou: People
 
-dn: ou=Services,dc=example,dc=local
-objectClass: organizationalunit
-objectClass: top
-ou: Services
+#dn: ou=Services,dc=sso,dc=local
+#objectClass: organizationalunit
+#objectClass: top
+#ou: Services
 
-dn: cn=HR,ou=Groups,dc=example,dc=local
+dn: cn=HR,ou=Groups,dc=sso,dc=local
 objectClass: groupOfNames
 objectClass: top
 cn: HR
 description: People who can manage HR entries
-member: uid=test.hr,ou=People,dc=example,dc=local
+member: uid=test.hr,ou=People,dc=sso,dc=local
 ou: groups
 
-dn: cn=WSO2IS,ou=Services,dc=example,dc=local
+dn: cn=WSO2IS,ou=Services,dc=sso,dc=local
+objectClass: simpleSecurityObject
+objectClass: top
+objectClass: device
+cn: WSO2IS
+# Providing an hash is *much* faster than providing a plaintext password and letting 389DS hash it every time
+userPassword: {PBKDF2_SHA256}AAAnENBOg9Pr7VfWGJEKpYaCNCvCTpe8xZAeCkcneca7Gir
+ KbHwLQ24j9I7u2c1vXSPnsWZzd4OoKETdAJZzxUhFJvlqBI7P71M7ts+t9QHJoo4Yx5TcSOCoz2
+ zNGtnjlQqi+rptAG5yNmiYJ1jULvXPHkNtr6Ckkwr3SgcpKWpJDLGLXNuhJkww/jv7D0eC/I9jz
+ nkOO5lJwMBKmxuWwxLjFjJ7MK1YGFPpUkxZuam3iy2X6kmPEQXCZdhE9dgATjK5I2WlgQOAZ34H
+ ouJHxuzV83JG+SJnYpE5rzDfuSmhaCZfmwWQpZCPNU1QKx+CrAeUht/Vrk4iM7ScJM+si/eTOaK
+ OCVGvpr2xZEvIy0xOXTAF6UW5Acos1a8jtKBJf4zmlsfKGByXQPNj38bd6CyVdKie1R6OT+YtPN
+ EkmrcSJCNc
+
+dn: cn=Crauto,ou=Services,dc=sso,dc=local
 objectClass: simpleSecurityObject
 objectClass: top
 objectClass: device
@@ -36,22 +50,46 @@ userPassword: {PBKDF2_SHA256}AAAnENBOg9Pr7VfWGJEKpYaCNCvCTpe8xZAeCkcneca7Gir
  OCVGvpr2xZEvIy0xOXTAF6UW5Acos1a8jtKBJf4zmlsfKGByXQPNj38bd6CyVdKie1R6OT+YtPN
  EkmrcSJCNc
 
-dn: cn=Test,ou=Services,dc=example,dc=local
+dn: cn=Test,ou=Services,dc=sso,dc=local
 objectClass: simpleSecurityObject
 objectClass: top
 objectClass: device
 cn: Test
-userPassword: {PBKDF2_SHA256}AAAnEAY63FcH0qnCSPG4XLyNWWccwxMZmLB0hc3g3IAp3yq
- 9Jaq2YCVKRP1A7wENutw28L7pELLL7zCjbbUrAsS4qMb/0Vj1wSaZ3GENKEg/mSQbsz31EVSunN
- sJQpUiUiWNcz9+jmmvtNOS8P/pefP8W2IHtvhTGhGo50HwTAjYN0XN9g8TUqASKK0oZNunWhQMb
- py29AbiA1M34X+gzxdfLgqfzEZNvpiko7El04V6YsxMHfl2wl1VVz5SXAMsFUS9qjgG9JlFPpNS
- A0d72EcRM6rdw1fZBuhvkSZuBDlzUAUwxSBvb7a3i0Nf2xRa+M9F8i8IXc7pOUNGoW52OzY+vSd
- ueaelpGCjfXkbJhwtjUN0eFq1E7UQVSo3xTZ8l2+TUSy5USscvoPhWQL8cL9mdxW9OIOqkZ1Z/Y
- uOEBHY936R
+userPassword: {PBKDF2_SHA256}AAAnENBOg9Pr7VfWGJEKpYaCNCvCTpe8xZAeCkcneca7Gir
+ KbHwLQ24j9I7u2c1vXSPnsWZzd4OoKETdAJZzxUhFJvlqBI7P71M7ts+t9QHJoo4Yx5TcSOCoz2
+ zNGtnjlQqi+rptAG5yNmiYJ1jULvXPHkNtr6Ckkwr3SgcpKWpJDLGLXNuhJkww/jv7D0eC/I9jz
+ nkOO5lJwMBKmxuWwxLjFjJ7MK1YGFPpUkxZuam3iy2X6kmPEQXCZdhE9dgATjK5I2WlgQOAZ34H
+ ouJHxuzV83JG+SJnYpE5rzDfuSmhaCZfmwWQpZCPNU1QKx+CrAeUht/Vrk4iM7ScJM+si/eTOaK
+ OCVGvpr2xZEvIy0xOXTAF6UW5Acos1a8jtKBJf4zmlsfKGByXQPNj38bd6CyVdKie1R6OT+YtPN
+ EkmrcSJCNc
 
-dn: uid=test.user,ou=People,dc=example,dc=local
+dn: uid=asd,ou=People,dc=sso,dc=local
 objectClass: telegramAccount
 objectClass: schacPersonalCharacteristics
+objectClass: schacLinkageIdentifiers
+objectClass: top
+objectClass: person
+objectClass: organizationalPerson
+objectClass: inetOrgPerson
+objectClass: weeeOpenPerson
+cn: Asd Asdone
+givenName: Asd
+sn: Asdone
+mobile: +391111112222
+telegramID: 123456789
+uid: asd
+userPassword: {PBKDF2_SHA256}AAAnENBOg9Pr7VfWGJEKpYaCNCvCTpe8xZAeCkcneca7Gir
+ KbHwLQ24j9I7u2c1vXSPnsWZzd4OoKETdAJZzxUhFJvlqBI7P71M7ts+t9QHJoo4Yx5TcSOCoz2
+ zNGtnjlQqi+rptAG5yNmiYJ1jULvXPHkNtr6Ckkwr3SgcpKWpJDLGLXNuhJkww/jv7D0eC/I9jz
+ nkOO5lJwMBKmxuWwxLjFjJ7MK1YGFPpUkxZuam3iy2X6kmPEQXCZdhE9dgATjK5I2WlgQOAZ34H
+ ouJHxuzV83JG+SJnYpE5rzDfuSmhaCZfmwWQpZCPNU1QKx+CrAeUht/Vrk4iM7ScJM+si/eTOaK
+ OCVGvpr2xZEvIy0xOXTAF6UW5Acos1a8jtKBJf4zmlsfKGByXQPNj38bd6CyVdKie1R6OT+YtPN
+ EkmrcSJCNc
+
+dn: uid=test.user,ou=People,dc=sso,dc=local
+objectClass: telegramAccount
+objectClass: schacPersonalCharacteristics
+objectClass: schacLinkageIdentifiers
 objectClass: top
 objectClass: person
 objectClass: organizationalPerson
@@ -70,9 +108,10 @@ userPassword: {PBKDF2_SHA256}AAAnENBOg9Pr7VfWGJEKpYaCNCvCTpe8xZAeCkcneca7Gir
  OCVGvpr2xZEvIy0xOXTAF6UW5Acos1a8jtKBJf4zmlsfKGByXQPNj38bd6CyVdKie1R6OT+YtPN
  EkmrcSJCNc
 
-dn: uid=test2.user2,ou=People,dc=example,dc=local
+dn: uid=test2.user2,ou=People,dc=sso,dc=local
 objectClass: telegramAccount
 objectClass: schacPersonalCharacteristics
+objectClass: schacLinkageIdentifiers
 objectClass: top
 objectClass: person
 objectClass: organizationalPerson
@@ -91,9 +130,10 @@ userPassword: {PBKDF2_SHA256}AAAnENBOg9Pr7VfWGJEKpYaCNCvCTpe8xZAeCkcneca7Gir
  OCVGvpr2xZEvIy0xOXTAF6UW5Acos1a8jtKBJf4zmlsfKGByXQPNj38bd6CyVdKie1R6OT+YtPN
  EkmrcSJCNc
 
-dn: uid=test.hr,ou=People,dc=example,dc=local
+dn: uid=test.hr,ou=People,dc=sso,dc=local
 objectClass: telegramAccount
 objectClass: schacPersonalCharacteristics
+objectClass: schacLinkageIdentifiers
 objectClass: top
 objectClass: person
 objectClass: organizationalPerson
@@ -112,11 +152,39 @@ userPassword: {PBKDF2_SHA256}AAAnENBOg9Pr7VfWGJEKpYaCNCvCTpe8xZAeCkcneca7Gir
  OCVGvpr2xZEvIy0xOXTAF6UW5Acos1a8jtKBJf4zmlsfKGByXQPNj38bd6CyVdKie1R6OT+YtPN
  EkmrcSJCNc
 
-dn: cn=Testers,ou=Groups,dc=example,dc=local
+dn: uid=wso2admin,ou=People,dc=sso,dc=local
+objectClass: telegramAccount
+objectClass: schacPersonalCharacteristics
+objectClass: schacLinkageIdentifiers
+objectClass: top
+objectClass: person
+objectClass: organizationalPerson
+objectClass: inetOrgPerson
+objectClass: weeeOpenPerson
+cn: WSO2 Admin
+sn: Admin
+uid: wso2admin
+userPassword: {PBKDF2_SHA256}AAAnENBOg9Pr7VfWGJEKpYaCNCvCTpe8xZAeCkcneca7Gir
+ KbHwLQ24j9I7u2c1vXSPnsWZzd4OoKETdAJZzxUhFJvlqBI7P71M7ts+t9QHJoo4Yx5TcSOCoz2
+ zNGtnjlQqi+rptAG5yNmiYJ1jULvXPHkNtr6Ckkwr3SgcpKWpJDLGLXNuhJkww/jv7D0eC/I9jz
+ nkOO5lJwMBKmxuWwxLjFjJ7MK1YGFPpUkxZuam3iy2X6kmPEQXCZdhE9dgATjK5I2WlgQOAZ34H
+ ouJHxuzV83JG+SJnYpE5rzDfuSmhaCZfmwWQpZCPNU1QKx+CrAeUht/Vrk4iM7ScJM+si/eTOaK
+ OCVGvpr2xZEvIy0xOXTAF6UW5Acos1a8jtKBJf4zmlsfKGByXQPNj38bd6CyVdKie1R6OT+YtPN
+ EkmrcSJCNc
+
+dn: cn=Testers,ou=Groups,dc=sso,dc=local
 objectClass: groupOfNames
 objectClass: top
 cn: Testers
 description: People who can test this thing from their test group
-member: uid=test.user,ou=People,dc=example,dc=local
-member: uid=test2.user2,ou=People,dc=example,dc=local
+member: uid=test.user,ou=People,dc=sso,dc=local
+member: uid=test2.user2,ou=People,dc=sso,dc=local
+ou: groups
+
+dn: cn=WSO2_Admin,ou=Groups,dc=sso,dc=local
+objectClass: groupOfNames
+objectClass: top
+cn: Testers
+description: WSO2 admin special group
+member: uid=wso2admin,ou=People,dc=sso,dc=local
 ou: groups
