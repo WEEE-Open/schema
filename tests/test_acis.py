@@ -200,23 +200,27 @@ def test_deny_password_change_ou(bind_dn):
 			])
 
 
-def test_deny_info_change_user_self():
+@pytest.mark.parametrize("bind_dn", [f"uid=test.user,ou=People,{SUFFIX}", f"cn=WSO2IS,ou=Services,{SUFFIX}", f"cn=Test,ou=Services,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}"])
+def test_deny_info_change_user(bind_dn):
 	test_dn = f"uid=test.user,ou=People,{SUFFIX}"
-	with LdapConnection(test_dn, "asd") as conn:
+	with LdapConnection(bind_dn, "asd") as conn:
 		with pytest.raises(ldap.INSUFFICIENT_ACCESS):
 			conn.modify_s(test_dn, [
 				(ldap.MOD_REPLACE, 'mobile', b'+392222222')
 			])
 
-def test_allow_info_change_user_self():
-	test_dn = f"uid=test.user,ou=People,{SUFFIX}"
-	with LdapConnection(test_dn, "asd") as conn:
-		with pytest.raises(ldap.INSUFFICIENT_ACCESS):
-			conn.modify_s(test_dn, [
-				(ldap.MOD_REPLACE, 'mobile', b'+392222222')
-			])
 
-def test_allow_read_hr():
+def test_allow_info_change_crauto():
+	test_dn = f"uid=test.user,ou=People,{SUFFIX}"
+	value = b'+392222222'
+	with LdapConnection(f"cn=Crauto,ou=Services,{SUFFIX}", "asd") as conn:
+		conn.modify_s(test_dn, [(ldap.MOD_REPLACE, 'mobile', value)])
+		result = conn.search_s(test_dn, ldap.SCOPE_BASE, None, ['mobile'])
+		assert len(result) > 0, 'mobile exists'
+		assert result[0][1]['mobile'][0] == value, 'mobile has the expected value'
+
+
+def test_allow_read_crauto():
 	with LdapConnection(f"cn=Crauto,ou=Services,{SUFFIX}", "asd") as conn:
 		result = conn.search_s(f"uid=test.user,ou=People,{SUFFIX}", ldap.SCOPE_BASE, None, ['*', '+'])
 		assert len(result) > 0, 'User is readable'
