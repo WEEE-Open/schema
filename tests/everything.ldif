@@ -15,14 +15,6 @@ version: 1
 #objectClass: top
 #ou: Services
 
-dn: cn=HR,ou=Groups,dc=sso,dc=local
-objectClass: groupOfNames
-objectClass: top
-cn: HR
-description: People who can manage HR entries
-member: uid=test.hr,ou=People,dc=sso,dc=local
-ou: groups
-
 dn: cn=WSO2IS,ou=Services,dc=sso,dc=local
 objectClass: simpleSecurityObject
 objectClass: top
@@ -51,6 +43,19 @@ userPassword: {PBKDF2_SHA256}AAAnENBOg9Pr7VfWGJEKpYaCNCvCTpe8xZAeCkcneca7Gir
  EkmrcSJCNc
 
 dn: cn=Test,ou=Services,dc=sso,dc=local
+objectClass: simpleSecurityObject
+objectClass: top
+objectClass: device
+cn: Test
+userPassword: {PBKDF2_SHA256}AAAnENBOg9Pr7VfWGJEKpYaCNCvCTpe8xZAeCkcneca7Gir
+ KbHwLQ24j9I7u2c1vXSPnsWZzd4OoKETdAJZzxUhFJvlqBI7P71M7ts+t9QHJoo4Yx5TcSOCoz2
+ zNGtnjlQqi+rptAG5yNmiYJ1jULvXPHkNtr6Ckkwr3SgcpKWpJDLGLXNuhJkww/jv7D0eC/I9jz
+ nkOO5lJwMBKmxuWwxLjFjJ7MK1YGFPpUkxZuam3iy2X6kmPEQXCZdhE9dgATjK5I2WlgQOAZ34H
+ ouJHxuzV83JG+SJnYpE5rzDfuSmhaCZfmwWQpZCPNU1QKx+CrAeUht/Vrk4iM7ScJM+si/eTOaK
+ OCVGvpr2xZEvIy0xOXTAF6UW5Acos1a8jtKBJf4zmlsfKGByXQPNj38bd6CyVdKie1R6OT+YtPN
+ EkmrcSJCNc
+
+dn: cn=Nextcloud,ou=Services,dc=sso,dc=local
 objectClass: simpleSecurityObject
 objectClass: top
 objectClass: device
@@ -96,10 +101,12 @@ objectClass: organizationalPerson
 objectClass: inetOrgPerson
 objectClass: weeeOpenPerson
 cn: Test User
+givenName: Test
 sn: User
 mobile: +391234567890
 telegramID: 123
 uid: test.user
+mail: foo@example.com
 userPassword: {PBKDF2_SHA256}AAAnENBOg9Pr7VfWGJEKpYaCNCvCTpe8xZAeCkcneca7Gir
  KbHwLQ24j9I7u2c1vXSPnsWZzd4OoKETdAJZzxUhFJvlqBI7P71M7ts+t9QHJoo4Yx5TcSOCoz2
  zNGtnjlQqi+rptAG5yNmiYJ1jULvXPHkNtr6Ckkwr3SgcpKWpJDLGLXNuhJkww/jv7D0eC/I9jz
@@ -172,6 +179,8 @@ userPassword: {PBKDF2_SHA256}AAAnENBOg9Pr7VfWGJEKpYaCNCvCTpe8xZAeCkcneca7Gir
  OCVGvpr2xZEvIy0xOXTAF6UW5Acos1a8jtKBJf4zmlsfKGByXQPNj38bd6CyVdKie1R6OT+YtPN
  EkmrcSJCNc
 
+# The MemberOf plugin will add the memberOf attribute automatically, if these are added after users
+
 dn: cn=Testers,ou=Groups,dc=sso,dc=local
 objectClass: groupOfNames
 objectClass: top
@@ -187,4 +196,12 @@ objectClass: top
 cn: Testers
 description: WSO2 admin special group
 member: uid=wso2admin,ou=People,dc=sso,dc=local
+ou: groups
+
+dn: cn=HR,ou=Groups,dc=sso,dc=local
+objectClass: groupOfNames
+objectClass: top
+cn: HR
+description: People who can manage HR entries
+member: uid=test.hr,ou=People,dc=sso,dc=local
 ou: groups
