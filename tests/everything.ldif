@@ -188,15 +188,19 @@ cn: Testers
 description: People who can test this thing from their test group
 member: uid=test.user,ou=People,dc=sso,dc=local
 member: uid=test2.user2,ou=People,dc=sso,dc=local
-ou: groups
+
+dn: cn=ExampleGroup,ou=Groups,dc=sso,dc=local
+objectClass: groupOfNames
+objectClass: top
+cn: ExampleGroup
+description: Example
 
 dn: cn=WSO2_Admin,ou=Groups,dc=sso,dc=local
 objectClass: groupOfNames
 objectClass: top
-cn: Testers
+cn: WSO2_Admin
 description: WSO2 admin special group
 member: uid=wso2admin,ou=People,dc=sso,dc=local
-ou: groups
 
 dn: cn=HR,ou=Groups,dc=sso,dc=local
 objectClass: groupOfNames
@@ -204,4 +208,3 @@ objectClass: top
 cn: HR
 description: People who can manage HR entries
 member: uid=test.hr,ou=People,dc=sso,dc=local
-ou: groups
