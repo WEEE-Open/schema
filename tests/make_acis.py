@@ -36,8 +36,8 @@ def acis():
 	print(f"""      -
         dn: "ou=People,{suffix}"
         acis:""")
-	print_aci(make_aci('Allow WSO2IS to read users', ('targetfilter = "(uid=*)"', 'targetattr = "objectClass || memberOf || dn || cn || uid || otpSecretKey || createTimestamp || creatorsName || entrydn || entryid || hasSubordinates || modifiersName || modifyTimestamp || nsUniqueId || numSubordinates || parentid || subschemaSubentry"'), {'read', 'search', 'compare'}, f'userdn = "ldap:///cn=WSO2IS,ou=Services,{suffix}"'))
-	print_aci(make_aci('Allow Nextcloud to read users', ('targetfilter = "(uid=*)"', 'targetattr = "objectClass || memberOf || dn || cn || uid || mail || jpegPhoto || createTimestamp || creatorsName || entrydn || entryid || hasSubordinates || modifiersName || modifyTimestamp || nsUniqueId || numSubordinates || parentid || subschemaSubentry"'), {'read', 'search', 'compare'}, f'userdn = "ldap:///cn=nextcloud,ou=Services,{suffix}"'))
+	print_aci(make_aci('Allow WSO2IS to read users', ('targetfilter = "(uid=*)"', 'targetattr = "objectClass || memberOf || cn || uid || otpSecretKey || createTimestamp || creatorsName || entrydn || entryid || hasSubordinates || modifiersName || modifyTimestamp || nsUniqueId || numSubordinates || parentid || subschemaSubentry"'), {'read', 'search', 'compare'}, f'userdn = "ldap:///cn=WSO2IS,ou=Services,{suffix}"'))
+	print_aci(make_aci('Allow Nextcloud to read users', ('targetfilter = "(uid=*)"', 'targetattr = "objectClass || memberOf || sn || cn || givenName || uid || mail || jpegPhoto || createTimestamp || creatorsName || entrydn || entryid || hasSubordinates || modifiersName || modifyTimestamp || nsUniqueId || numSubordinates || parentid || subschemaSubentry"'), {'read', 'search', 'compare'}, f'userdn = "ldap:///cn=nextcloud,ou=Services,{suffix}"'))
 	print_aci(make_aci('Allow WSO2IS to change OTP secrets', ('targetfilter = "(uid=*)"', 'targetattr = "otpSecretKey"'), {'write'}, f'userdn = "ldap:///cn=WSO2IS,ou=Services,{suffix}"'))
 	# print_aci(make_aci('Allow users to change their password', ('targetfilter = "(uid=*)"', 'targetattr = "userPassword"'), {'write'}, f'userdn = "ldap:///self"'))
 
