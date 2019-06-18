@@ -164,7 +164,7 @@ def test_fail_password_change_constraint(bind_dn):
 			])
 
 
-@pytest.mark.parametrize("bind_dn", [f"uid=test2.user2,ou=People,{SUFFIX}", f"cn=Test,ou=Services,{SUFFIX}", f"uid=test.user,ou=People,{SUFFIX}", f"cn=WSO2IS,ou=Services,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}"])
+@pytest.mark.parametrize("bind_dn", [f"uid=test2.user2,ou=People,{SUFFIX}", f"cn=Test,ou=Services,{SUFFIX}", f"cn=Nextcloud,ou=Services,{SUFFIX}", f"uid=test.user,ou=People,{SUFFIX}", f"cn=WSO2IS,ou=Services,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}"])
 def test_deny_password_change(bind_dn):
 	with LdapConnection(bind_dn, "asd") as conn:
 		with pytest.raises(ldap.INSUFFICIENT_ACCESS):
@@ -173,7 +173,7 @@ def test_deny_password_change(bind_dn):
 			])
 
 
-@pytest.mark.parametrize("bind_dn", [f"uid=test.user,ou=People,{SUFFIX}", f"cn=WSO2IS,ou=Services,{SUFFIX}", f"cn=Test,ou=Services,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}"])
+@pytest.mark.parametrize("bind_dn", [f"uid=test.user,ou=People,{SUFFIX}", f"cn=WSO2IS,ou=Services,{SUFFIX}", f"cn=Test,ou=Services,{SUFFIX}", f"cn=Nextcloud,ou=Services,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}"])
 def test_deny_password_change_sso_service(bind_dn):
 	with LdapConnection(bind_dn, "asd") as conn:
 		with pytest.raises(ldap.INSUFFICIENT_ACCESS):
@@ -182,7 +182,7 @@ def test_deny_password_change_sso_service(bind_dn):
 			])
 
 
-@pytest.mark.parametrize("bind_dn", [f"uid=test.user,ou=People,{SUFFIX}", f"cn=WSO2IS,ou=Services,{SUFFIX}", f"cn=Test,ou=Services,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}"])
+@pytest.mark.parametrize("bind_dn", [f"uid=test.user,ou=People,{SUFFIX}", f"cn=WSO2IS,ou=Services,{SUFFIX}", f"cn=Test,ou=Services,{SUFFIX}", f"cn=Nextcloud,ou=Services,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}"])
 def test_deny_password_change_service(bind_dn):
 	with LdapConnection(bind_dn, "asd") as conn:
 		with pytest.raises(ldap.INSUFFICIENT_ACCESS):
@@ -191,7 +191,7 @@ def test_deny_password_change_service(bind_dn):
 			])
 
 
-@pytest.mark.parametrize("bind_dn", [f"uid=test.user,ou=People,{SUFFIX}", f"cn=WSO2IS,ou=Services,{SUFFIX}", f"cn=Test,ou=Services,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}"])
+@pytest.mark.parametrize("bind_dn", [f"uid=test.user,ou=People,{SUFFIX}", f"cn=WSO2IS,ou=Services,{SUFFIX}", f"cn=Test,ou=Services,{SUFFIX}", f"cn=Nextcloud,ou=Services,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}"])
 def test_deny_password_change_ou(bind_dn):
 	with LdapConnection(bind_dn, "asd") as conn:
 		with pytest.raises(ldap.INSUFFICIENT_ACCESS):
@@ -200,7 +200,7 @@ def test_deny_password_change_ou(bind_dn):
 			])
 
 
-@pytest.mark.parametrize("bind_dn", [f"uid=test.user,ou=People,{SUFFIX}", f"cn=WSO2IS,ou=Services,{SUFFIX}", f"cn=Test,ou=Services,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}"])
+@pytest.mark.parametrize("bind_dn", [f"uid=test.user,ou=People,{SUFFIX}", f"cn=WSO2IS,ou=Services,{SUFFIX}", f"cn=Test,ou=Services,{SUFFIX}", f"cn=Nextcloud,ou=Services,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}"])
 def test_deny_info_change_user(bind_dn):
 	test_dn = f"uid=test.user,ou=People,{SUFFIX}"
 	with LdapConnection(bind_dn, "asd") as conn:
@@ -227,6 +227,8 @@ def test_allow_read_crauto():
 		expected = {
 			'memberOf',
 			'objectClass',
+			'givenName',
+			'mail',
 			'cn',
 			'sn',
 			'mobile',
@@ -238,9 +240,34 @@ def test_allow_read_crauto():
 		assert expected == set(result[0][1].keys()), 'All expected attributes are present'
 
 
-def test_deny_password_read_crauto():
+def test_allow_read_nextcloud():
+	with LdapConnection(f"cn=Nextcloud,ou=Services,{SUFFIX}", "asd") as conn:
+		result = conn.search_s(f"uid=test.user,ou=People,{SUFFIX}", ldap.SCOPE_BASE, None, ['*', '+'])
+		assert len(result) > 0, 'User is readable'
+		expected = {
+			'memberOf',
+			'objectClass',
+			'cn',
+			'sn',
+			'givenName',
+			'uid',
+			'mail',
+			'entryid',
+			'nsUniqueId',
+			'createTimestamp',
+			'modifyTimestamp',
+			'creatorsName',
+			'modifiersName',
+			'parentid',
+			'entrydn',
+		}
+		assert expected == set(result[0][1].keys()), 'All expected attributes are present'
+
+
+@pytest.mark.parametrize("bind_dn", [f"cn=Crauto,ou=Services,{SUFFIX}", f"uid=test.user,ou=People,{SUFFIX}", f"cn=WSO2IS,ou=Services,{SUFFIX}", f"cn=Test,ou=Services,{SUFFIX}", f"cn=Nextcloud,ou=Services,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}"])
+def test_deny_password_read(bind_dn):
 	with LdapConnection(f"cn=Crauto,ou=Services,{SUFFIX}", "asd") as conn:
-		result = conn.search_s(f"uid=test.user,ou=People,{SUFFIX}", ldap.SCOPE_BASE, None, ['userPassword'])
+		result = conn.search_s(bind_dn, ldap.SCOPE_BASE, None, ['userPassword'])
 		assert len(result[0][1]) == 0, 'No attributes returned'
 
 
@@ -265,7 +292,7 @@ def test_allow_read_sso():
 		assert expected == set(result[0][1].keys()), 'All expected attributes are present'
 
 
-@pytest.mark.parametrize("bind_dn", [f"cn=WSO2IS,ou=Services,{SUFFIX}", f"uid=test.user,ou=People,{SUFFIX}"])
+@pytest.mark.parametrize("bind_dn", [f"cn=WSO2IS,ou=Services,{SUFFIX}", f"uid=test.user,ou=People,{SUFFIX}", f"cn=Nextcloud,ou=Services,{SUFFIX}"])
 def test_deny_add_user(bind_dn, example_user):
 	with LdapConnection(bind_dn, "asd") as conn:
 		with pytest.raises(ldap.INSUFFICIENT_ACCESS):
@@ -279,7 +306,7 @@ def test_allow_add_user_crauto(example_user):
 		assert len(result) > 0, 'User has been added'
 
 
-@pytest.mark.parametrize("bind_dn", [f"cn=WSO2IS,ou=Services,{SUFFIX}", f"uid=test.user,ou=People,{SUFFIX}"])
+@pytest.mark.parametrize("bind_dn", [f"cn=WSO2IS,ou=Services,{SUFFIX}", f"uid=test.user,ou=People,{SUFFIX}", f"cn=Nextcloud,ou=Services,{SUFFIX}"])
 def test_deny_delete_user(bind_dn):
 	with LdapConnection(bind_dn, "asd") as conn:
 		with pytest.raises(ldap.INSUFFICIENT_ACCESS):
@@ -293,28 +320,28 @@ def test_allow_delete_user_crauto():
 		assert len(result) == 0, 'User is gone'
 
 
-@pytest.mark.parametrize("bind_dn", [f"cn=Crauto,ou=Services,{SUFFIX}", f"cn=WSO2IS,ou=Services,{SUFFIX}", f"uid=test.user,ou=People,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}"])
+@pytest.mark.parametrize("bind_dn", [f"cn=Crauto,ou=Services,{SUFFIX}", f"cn=WSO2IS,ou=Services,{SUFFIX}", f"uid=test.user,ou=People,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}", f"cn=Nextcloud,ou=Services,{SUFFIX}"])
 def test_deny_add_group(bind_dn, example_group):
 	with LdapConnection(bind_dn, "asd") as conn:
 		with pytest.raises(ldap.INSUFFICIENT_ACCESS):
 			conn.add_s(f"cn=Example Group,ou=Groups,{SUFFIX}", example_group)
 
 
-@pytest.mark.parametrize("bind_dn", [f"cn=Crauto,ou=Services,{SUFFIX}", f"cn=WSO2IS,ou=Services,{SUFFIX}", f"uid=test.user,ou=People,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}"])
+@pytest.mark.parametrize("bind_dn", [f"cn=Crauto,ou=Services,{SUFFIX}", f"cn=WSO2IS,ou=Services,{SUFFIX}", f"uid=test.user,ou=People,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}", f"cn=Nextcloud,ou=Services,{SUFFIX}"])
 def test_deny_delete_group(bind_dn):
 	with LdapConnection(bind_dn, "asd") as conn:
 		with pytest.raises(ldap.INSUFFICIENT_ACCESS):
 			conn.delete_s(f"cn=People,ou=Groups,{SUFFIX}")
 
 
-@pytest.mark.parametrize("bind_dn", [f"cn=Crauto,ou=Services,{SUFFIX}", f"cn=WSO2IS,ou=Services,{SUFFIX}", f"uid=test.user,ou=People,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}"])
+@pytest.mark.parametrize("bind_dn", [f"cn=Crauto,ou=Services,{SUFFIX}", f"cn=WSO2IS,ou=Services,{SUFFIX}", f"uid=test.user,ou=People,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}", f"cn=Nextcloud,ou=Services,{SUFFIX}"])
 def test_deny_add_container(bind_dn, empty_container):
 	with LdapConnection(bind_dn, "asd") as conn:
 		with pytest.raises(ldap.INSUFFICIENT_ACCESS):
 			conn.add_s(f"cn=Empty,{SUFFIX}", empty_container)
 
 
-@pytest.mark.parametrize("bind_dn", [f"cn=Crauto,ou=Services,{SUFFIX}", f"cn=WSO2IS,ou=Services,{SUFFIX}", f"uid=test.user,ou=People,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}"])
+@pytest.mark.parametrize("bind_dn", [f"cn=Crauto,ou=Services,{SUFFIX}", f"cn=WSO2IS,ou=Services,{SUFFIX}", f"uid=test.user,ou=People,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}", f"cn=Nextcloud,ou=Services,{SUFFIX}"])
 def test_deny_delete_container(bind_dn):
 	with LdapConnection(bind_dn, "asd") as conn:
 		with pytest.raises(ldap.INSUFFICIENT_ACCESS):
@@ -328,7 +355,7 @@ def test_deny_read_group(bind_dn):
 		assert len(result[0][1]) == 0, 'No group details or members are visible'
 
 
-@pytest.mark.parametrize("bind_dn", [f"cn=Crauto,ou=Services,{SUFFIX}", f"cn=WSO2IS,ou=Services,{SUFFIX}"])
+@pytest.mark.parametrize("bind_dn", [f"cn=Crauto,ou=Services,{SUFFIX}", f"cn=WSO2IS,ou=Services,{SUFFIX}", f"cn=Nextcloud,ou=Services,{SUFFIX}"])
 def test_allow_read_group(bind_dn):
 	with LdapConnection(bind_dn, "asd") as conn:
 		result = conn.search_s(f"cn=Testers,ou=Groups,{SUFFIX}", ldap.SCOPE_BASE, None, ['ou', 'member'])
@@ -339,14 +366,14 @@ def test_allow_read_group(bind_dn):
 		assert len(attributes['member']) > 0, 'Groups has some members'
 
 
-@pytest.mark.parametrize("bind_dn", [f"cn=WSO2IS,ou=Services,{SUFFIX}", f"cn=Test,ou=Services,{SUFFIX}", f"uid=test.user,ou=People,{SUFFIX}"])
+@pytest.mark.parametrize("bind_dn", [f"cn=WSO2IS,ou=Services,{SUFFIX}", f"cn=Test,ou=Services,{SUFFIX}", f"cn=Nextcloud,ou=Services,{SUFFIX}", f"uid=test.user,ou=People,{SUFFIX}"])
 def test_deny_add_to_group(bind_dn):
 	with LdapConnection(bind_dn, "asd") as conn:
 		with pytest.raises(ldap.INSUFFICIENT_ACCESS):
 			conn.modify_s(f"cn=Testers,ou=Groups,{SUFFIX}", [(ldap.MOD_ADD, 'member', bytes(f'uid=test.hr,ou=People,{SUFFIX}', 'utf8'))])
 
 
-@pytest.mark.parametrize("bind_dn", [f"cn=WSO2IS,ou=Services,{SUFFIX}", f"cn=Test,ou=Services,{SUFFIX}", f"uid=test.user,ou=People,{SUFFIX}"])
+@pytest.mark.parametrize("bind_dn", [f"cn=WSO2IS,ou=Services,{SUFFIX}", f"cn=Test,ou=Services,{SUFFIX}", f"cn=Nextcloud,ou=Services,{SUFFIX}", f"uid=test.user,ou=People,{SUFFIX}"])
 def test_deny_remove_from_group(bind_dn):
 	with LdapConnection(bind_dn, "asd") as conn:
 		with pytest.raises(ldap.INSUFFICIENT_ACCESS):
