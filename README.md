@@ -24,9 +24,9 @@ The very large OID from the UUID arc (i.e. `2.25.1008418248464193827828833840633
 
 There are a few more bits and bobs in `98weeeopen.ldif`. Not very interesting.
 
-## ACI and tests
+## ACI
 
-The `tests` directory contains some ACIs for 389DS and tests related to those.
+The `aci` directory contains some ACIs for 389DS and tests related to those.
 
 `make_acis.py` has a method that formats all the parts into an ACI, then it prints all the ACIs in a YAML format that can be
 pasted into an Ansible playbook. For details on how and where to paste it, see
@@ -42,7 +42,6 @@ The workflow for making ACIs and testing should be something like this:
 cd tests
 pipenv install
 pipenv shell
-# Edit the ACIs in make_acis.py
 ./make_acis.py
 # Paste the output into the playbook
 ./test_acis.py

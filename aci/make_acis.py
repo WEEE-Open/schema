@@ -25,7 +25,7 @@ def acis():
 	# suffix = 'dc=example,dc=local'
 	suffix = '{{ dirsrv_suffix }}'
 
-	print("Paste this into your playbook:")
+	print("Paste this into your playbook:\n")
 	print(f"""      -
         dn: "{suffix}"
         acis:""")
