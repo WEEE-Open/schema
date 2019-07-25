@@ -15,11 +15,11 @@ version: 1
 #objectClass: top
 #ou: Services
 
-dn: cn=WSO2IS,ou=Services,dc=sso,dc=local
+dn: cn=Keycloak,ou=Services,dc=sso,dc=local
 objectClass: simpleSecurityObject
 objectClass: top
 objectClass: device
-cn: WSO2IS
+cn: Keycloak
 # Providing an hash is *much* faster than providing a plaintext password and letting 389DS hash it every time
 userPassword: {PBKDF2_SHA256}AAAnENBOg9Pr7VfWGJEKpYaCNCvCTpe8xZAeCkcneca7Gir
  KbHwLQ24j9I7u2c1vXSPnsWZzd4OoKETdAJZzxUhFJvlqBI7P71M7ts+t9QHJoo4Yx5TcSOCoz2
@@ -33,7 +33,7 @@ dn: cn=Crauto,ou=Services,dc=sso,dc=local
 objectClass: simpleSecurityObject
 objectClass: top
 objectClass: device
-cn: WSO2IS
+cn: Keycloak
 userPassword: {PBKDF2_SHA256}AAAnENBOg9Pr7VfWGJEKpYaCNCvCTpe8xZAeCkcneca7Gir
  KbHwLQ24j9I7u2c1vXSPnsWZzd4OoKETdAJZzxUhFJvlqBI7P71M7ts+t9QHJoo4Yx5TcSOCoz2
  zNGtnjlQqi+rptAG5yNmiYJ1jULvXPHkNtr6Ckkwr3SgcpKWpJDLGLXNuhJkww/jv7D0eC/I9jz
