@@ -24,6 +24,8 @@ def print_aci(aci: str):
 def acis():
 	# suffix = 'dc=example,dc=local'
 	suffix = '{{ dirsrv_suffix }}'
+	# TODO: tests for bot
+	# TODO: tests for weeelab
 
 	print("Paste this into your playbook:\n")
 	print(f"""      -
@@ -46,11 +48,20 @@ def acis():
 	print_aci(make_aci('Allow Crauto to read users', ('targetfilter = "(uid=*)"', 'targetattr = "uid || cn || givenname || sn || memberof || mail || schacpersonaluniquecode || degreecourse || schacdateofbirth || schacplaceofbirth || mobile || safetytestdate || telegramid || telegramnickname || weeelabnickname || sshpublickey || description || nsaccountlock || createTimestamp || modifyTimestamp || objectClass"'), {'read', 'search', 'compare'}, f'userdn = "ldap:///cn=crauto,ou=Services,{suffix}"'))
 	print_aci(make_aci('Allow Crauto to edit users', ('targetfilter="(&(uid=*)(objectClass=inetOrgPerson)(objectClass=schacPersonalCharacteristics)(objectClass=schacLinkageIdentifiers)(objectClass=telegramAccount)(objectClass=weeeOpenPerson))"', 'targetattr = "objectClass || cn || givenname || sn || memberof || mail || schacpersonaluniquecode || degreecourse || schacdateofbirth || schacplaceofbirth || mobile || safetytestdate || telegramid || telegramnickname || weeelabnickname || description || nsaccountlock || description"'), {'add', 'write', 'delete'}, f'userdn = "ldap:///cn=crauto,ou=Services,{suffix}"'))
 	print_aci(make_aci('Allow Crauto to change users password', ('targetfilter = "(uid=*)"', 'targetattr = "userPassword"'), {'add', 'write'}, f'userdn = "ldap:///cn=crauto,ou=Services,{suffix}"'))
+
+	print_aci(make_aci('Allow bot to read users', ('targetfilter = "(uid=*)"', 'targetattr = "uid || cn || givenname || sn || memberof || telegramid || telegramnickname || nsaccountlock || objectClass"'), {'read', 'search', 'compare'}, f'userdn = "ldap:///cn=bot,ou=Services,{suffix}"'))
+	print_aci(make_aci('Allow bot to update Telegram nickname', ('targetfilter = "(uid=*)"', 'targetattr = "telegramnickname"'), {'write'}, f'userdn = "ldap:///cn=bot,ou=Services,{suffix}"'))
+
+	print_aci(make_aci('Allow weeelab to read users', ('targetfilter = "(uid=*)"', 'targetattr = "uid || givenname || cn || schacpersonaluniquecode || weeelabnickname || nsaccountlock || objectClass"'), {'read', 'search', 'compare'}, f'userdn = "ldap:///cn=weeelab,ou=Services,{suffix}"'))
 	print(f"""      -
         dn: "ou=Invites,{suffix}"
         acis:""")
+	# targetfilter makes no sense, but these CANNOT be left empty and "target = ldap:\\\*,ou=Invites,..." does NOT work.
 	print_aci(make_aci('Allow Crauto to read invites', ('targetfilter = "(cn=*)"', 'targetattr = "inviteCode || cn || givenname || sn || mail || schacpersonaluniquecode || degreecourse || telegramid || telegramnickname"'), {'read', 'search', 'compare'}, f'userdn = "ldap:///cn=crauto,ou=Services,{suffix}"'))
 	print_aci(make_aci('Allow Crauto to delete invites', ('targetfilter = "(cn=*)"',), {'delete'}, f'userdn = "ldap:///cn=crauto,ou=Services,{suffix}"'))
+
+	print_aci(make_aci('Allow Bot to read invites', ('targetattr = "inviteCode"',), {'read', 'search', 'compare'}, f'userdn = "ldap:///cn=bot,ou=Services,{suffix}"'))
+	print_aci(make_aci('Allow Bot to update invites', ('targetattr = "telegramid || telegramnickname"',), {'write'}, f'userdn = "ldap:///cn=bot,ou=Services,{suffix}"'))
 
 	print(f"""      -
         dn: "ou=Groups,{suffix}"
