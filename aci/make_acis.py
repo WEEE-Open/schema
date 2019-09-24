@@ -60,7 +60,7 @@ def acis():
 	print_aci(make_aci('Allow Crauto to read invites', ('targetfilter = "(cn=*)"', 'targetattr = "inviteCode || cn || givenname || sn || mail || schacpersonaluniquecode || degreecourse || telegramid || telegramnickname"'), {'read', 'search', 'compare'}, f'userdn = "ldap:///cn=crauto,ou=Services,{suffix}"'))
 	print_aci(make_aci('Allow Crauto to delete invites', ('targetfilter = "(cn=*)"',), {'delete'}, f'userdn = "ldap:///cn=crauto,ou=Services,{suffix}"'))
 
-	print_aci(make_aci('Allow Bot to read invites', ('targetattr = "inviteCode"',), {'read', 'search', 'compare'}, f'userdn = "ldap:///cn=bot,ou=Services,{suffix}"'))
+	print_aci(make_aci('Allow Bot to read invites', ('targetattr = "inviteCode || telegramid || telegramnickname"',), {'read', 'search', 'compare'}, f'userdn = "ldap:///cn=bot,ou=Services,{suffix}"'))
 	print_aci(make_aci('Allow Bot to update invites', ('targetattr = "telegramid || telegramnickname"',), {'write'}, f'userdn = "ldap:///cn=bot,ou=Services,{suffix}"'))
 
 	print(f"""      -
