@@ -52,6 +52,8 @@ def acis():
 	print_aci(make_aci('Allow bot to read users', ('targetfilter = "(uid=*)"', 'targetattr = "uid || cn || givenname || sn || memberof || telegramid || telegramnickname || nsaccountlock || objectClass"'), {'read', 'search', 'compare'}, f'userdn = "ldap:///cn=bot,ou=Services,{suffix}"'))
 	print_aci(make_aci('Allow bot to update Telegram nickname', ('targetfilter = "(uid=*)"', 'targetattr = "telegramnickname"'), {'write'}, f'userdn = "ldap:///cn=bot,ou=Services,{suffix}"'))
 
+	print_aci(make_aci('Allow weeehire to read users', ('targetfilter = "(uid=*)"', 'targetattr = "uid || cn || telegramid || telegramnickname || nsaccountlock || member"'), {'read', 'search', 'compare'}, f'userdn = "ldap:///cn=weeehire,ou=Services,{suffix}"'))
+
 	print_aci(make_aci('Allow weeelab to read users', ('targetfilter = "(uid=*)"', 'targetattr = "uid || givenname || cn || schacpersonaluniquecode || weeelabnickname || nsaccountlock || objectClass"'), {'read', 'search', 'compare'}, f'userdn = "ldap:///cn=weeelab,ou=Services,{suffix}"'))
 	print(f"""      -
         dn: "ou=Invites,{suffix}"
@@ -59,6 +61,8 @@ def acis():
 	# targetfilter makes no sense, but these CANNOT be left empty and "target = ldap:\\\*,ou=Invites,..." does NOT work.
 	print_aci(make_aci('Allow Crauto to read invites', ('targetfilter = "(cn=*)"', 'targetattr = "inviteCode || cn || givenname || sn || mail || schacpersonaluniquecode || degreecourse || telegramid || telegramnickname"'), {'read', 'search', 'compare'}, f'userdn = "ldap:///cn=crauto,ou=Services,{suffix}"'))
 	print_aci(make_aci('Allow Crauto to delete invites', ('targetfilter = "(cn=*)"',), {'delete'}, f'userdn = "ldap:///cn=crauto,ou=Services,{suffix}"'))
+
+	print_aci(make_aci('Allow weeehire to read and create invites', ('targetfilter = "(cn=*)"', 'targetattr = "inviteCode || cn || givenname || sn || mail || schacpersonaluniquecode || degreecourse"'), {'read', 'search', 'compare', 'write'}, f'userdn = "ldap:///cn=weeehire,ou=Services,{suffix}"'))
 
 	print_aci(make_aci('Allow Bot to read invites', ('targetattr = "inviteCode || telegramid || telegramnickname"',), {'read', 'search', 'compare'}, f'userdn = "ldap:///cn=bot,ou=Services,{suffix}"'))
 	print_aci(make_aci('Allow Bot to update invites', ('targetattr = "telegramid || telegramnickname"',), {'write'}, f'userdn = "ldap:///cn=bot,ou=Services,{suffix}"'))
