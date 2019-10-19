@@ -50,7 +50,7 @@ def acis():
 	print_aci(make_aci('Allow Crauto to change users password', ('targetfilter = "(uid=*)"', 'targetattr = "userPassword"'), {'add', 'write'}, f'userdn = "ldap:///cn=crauto,ou=Services,{suffix}"'))
 
 	print_aci(make_aci('Allow bot to read users', ('targetfilter = "(uid=*)"', 'targetattr = "uid || cn || givenname || sn || memberof || telegramid || telegramnickname || nsaccountlock || objectClass"'), {'read', 'search', 'compare'}, f'userdn = "ldap:///cn=bot,ou=Services,{suffix}"'))
-	print_aci(make_aci('Allow bot to update Telegram nickname', ('targetfilter = "(uid=*)"', 'targetattr = "telegramnickname"'), {'write'}, f'userdn = "ldap:///cn=bot,ou=Services,{suffix}"'))
+	print_aci(make_aci('Allow bot to update Telegram nickname and id', ('targetfilter = "(uid=*)"', 'targetattr = "telegramnickname || telegramid"'), {'write'}, f'userdn = "ldap:///cn=bot,ou=Services,{suffix}"'))
 
 	print_aci(make_aci('Allow weeehire to read users', ('targetfilter = "(uid=*)"', 'targetattr = "uid || cn || telegramnickname || nsaccountlock || memberof || objectclass"'), {'read', 'search', 'compare'}, f'userdn = "ldap:///cn=weeehire,ou=Services,{suffix}"'))
 
