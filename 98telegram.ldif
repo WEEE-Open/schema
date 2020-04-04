@@ -31,7 +31,7 @@ objectClasses: (
   2.25.100841824846419382782883384063386193490.2.731.1
   NAME 'telegramAccount'
   AUXILIARY
-  MAY ( telegramID $ telegramNickname )
+  MAY ( telegramID $ telegramNickname $ telegramChatID )
   X-ORIGIN 'WEEE Open'
   )
 #
@@ -42,7 +42,7 @@ objectClasses: (
   NAME 'telegramGroup'
   SUP groupOfNames
   AUXILIARY
-  MAY ( telegramInviteLink )
+  MAY ( telegramInviteLink $ telegramChatID )
   X-ORIGIN 'WEEE Open'
   )
 #
@@ -77,4 +77,13 @@ attributeTypes: (
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
   SINGLE-VALUE
   )
-
+#
+#---------------------------------------------------------------------
+#
+attributeTypes: (
+  2.25.100841824846419382782883384063386193490.1.731.4
+  NAME 'telegramChatID'
+  DESC 'Telegram chat ID number'
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.36
+  SINGLE-VALUE
+  )
