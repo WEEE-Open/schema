@@ -39,9 +39,10 @@ instructions there, you'll clone this repo anyway, so it all makes sense, hopefu
 The workflow for making ACIs and testing should be something like this:
 
 ```shell
-cd tests
-pipenv install
-pipenv shell
+cd aci
+python3 -m venv venv
+source venv/bin/activate
+pip install
 ./make_acis.py
 # Paste the output into the playbook
 ./test_acis.py
