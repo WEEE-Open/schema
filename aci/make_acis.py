@@ -52,7 +52,7 @@ def acis():
 	print_aci(make_aci('Allow bot to read users', ('targetfilter = "(uid=*)"', 'targetattr = "uid || cn || givenname || sn || memberof || telegramid || telegramnickname || schacDateOfBirth || safetyTestDate || nsaccountlock || objectClass"'), {'read', 'search', 'compare'}, f'userdn = "ldap:///cn=bot,ou=Services,{suffix}"'))
 	print_aci(make_aci('Allow bot to update Telegram nickname and id', ('targetfilter = "(uid=*)"', 'targetattr = "telegramnickname || telegramid"'), {'write'}, f'userdn = "ldap:///cn=bot,ou=Services,{suffix}"'))
 
-	print_aci(make_aci('Allow Bookstack to read users', ('targetfilter = "(uid=*)"', 'targetattr = "objectClass || memberOf || sn || cn || givenName || uid || mail || jpegPhoto || entrydn || nsUniqueId || nsAccountLock"'), {'read', 'search', 'compare'}, f'userdn = "ldap:///cn=wiki,ou=Services,{suffix}"'))
+	print_aci(make_aci('Allow Wiki to read users', ('targetfilter = "(uid=*)"', 'targetattr = "objectClass || memberOf || sn || cn || givenName || uid || mail || jpegPhoto || entrydn || nsUniqueId || nsAccountLock"'), {'read', 'search', 'compare'}, f'userdn = "ldap:///cn=wiki,ou=Services,{suffix}"'))
 
 	print_aci(make_aci('Allow weeehire to read users', ('targetfilter = "(uid=*)"', 'targetattr = "uid || cn || telegramnickname || nsaccountlock || memberof || objectclass"'), {'read', 'search', 'compare'}, f'userdn = "ldap:///cn=weeehire,ou=Services,{suffix}"'))
 
@@ -74,6 +74,7 @@ def acis():
         acis:""")
 	print_aci(make_aci('Allow Keycloak to read groups', ('targetfilter = "(cn=*)"', 'targetattr = "objectClass || cn || ou || description || member || uniqueMember || nsUniqueId"'), {'read', 'search', 'compare'}, f'userdn = "ldap:///cn=Keycloak,ou=Services,{suffix}"'))
 	print_aci(make_aci('Allow Nextcloud to read groups', ('targetfilter = "(cn=*)"', 'targetattr = "objectClass || cn || ou || description || member || uniqueMember || nsUniqueId"'), {'read', 'search', 'compare'}, f'userdn = "ldap:///cn=Nextcloud,ou=Services,{suffix}"'))
+	print_aci(make_aci('Allow Wiki to read groups', ('targetfilter = "(cn=*)"', 'targetattr = "objectClass || cn || ou || member || uniqueMember || nsUniqueId"'), {'read', 'search', 'compare'}, f'userdn = "ldap:///cn=wiki,ou=Services,{suffix}"'))
 	print_aci(make_aci('Allow Crauto to read groups', ('targetfilter = "(cn=*)"', 'targetattr = "objectClass || cn || ou || description || member || uniqueMember || nsUniqueId"',), {'read', 'search', 'compare'}, f'userdn = "ldap:///cn=crauto,ou=Services,{suffix}"'))
 	print_aci(make_aci('Allow Crauto to add and remove people from groups', ('targetfilter = "(cn=*)"', 'targetattr = "member || uniqueMember"',), {'write'}, f'userdn = "ldap:///cn=crauto,ou=Services,{suffix}"'))
 
