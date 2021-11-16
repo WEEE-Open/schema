@@ -56,7 +56,7 @@ def acis():
 
 	print_aci(make_aci('Allow weeehire to read users', ('targetfilter = "(uid=*)"', 'targetattr = "uid || cn || telegramnickname || nsaccountlock || memberof || objectclass"'), {'read', 'search', 'compare'}, f'userdn = "ldap:///cn=weeehire,ou=Services,{suffix}"'))
 
-	print_aci(make_aci('Allow weeelab to read users', ('targetfilter = "(uid=*)"', 'targetattr = "uid || givenname || cn || schacpersonaluniquecode || weeelabnickname || nsaccountlock || objectClass"'), {'read', 'search', 'compare'}, f'userdn = "ldap:///cn=weeelab,ou=Services,{suffix}"'))
+	print_aci(make_aci('Allow weeelab to read users', ('targetfilter = "(uid=*)"', 'targetattr = "uid || givenname || cn || schacpersonaluniquecode || weeelabnickname || signedsir || nsaccountlock || objectClass"'), {'read', 'search', 'compare'}, f'userdn = "ldap:///cn=weeelab,ou=Services,{suffix}"'))
 	print(f"""      -
         dn: "ou=Invites,{suffix}"
         acis:""")
