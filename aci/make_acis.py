@@ -31,10 +31,7 @@ def acis():
 	print(f"""      -
         dn: "{suffix}"
         acis:""")
-	# Apparently, avoiding disclosure ("does this DN exist or not?") is impossible, so it's not worth it to try to hide
-	# entries that shouldn't be seen e.g. in ou=Services. Authorized accounts will know which other accounts exist and
-	# their objectClass, but that doesn't seem an extreme security risk to me...
-	print_aci(make_aci('Allow all to read suffix', (f'target = "ldap:///{suffix}"', 'targetattr = "objectClass"'), {'read', 'search'}, f'userdn = "ldap:///all"'))
+	print_aci(make_aci('Allow all to read suffix', (f'target = "ldap:///{suffix}"', 'targetattr = "objectClass"','targetfilter = "(objectClass=domain)"'), {'read', 'search'}, f'userdn = "ldap:///all"'))
 	print(f"""      -
         dn: "ou=People,{suffix}"
         acis:""")
