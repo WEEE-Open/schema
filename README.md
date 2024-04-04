@@ -32,6 +32,8 @@ The `aci` directory contains some ACIs for 389DS and tests related to those.
 pasted into an Ansible playbook. For details on how and where to paste it, see
 [the "sso" repo](https://github.com/WEEE-Open/sso).
 
+Alternatively, `make_acis.py` can also output a LDIF file.
+
 `test_acis.py` uses pytest to test that the ACIs are working as expected. It also tests the password policy set in
 [the "sso" repo](https://github.com/WEEE-Open/sso). It requires 389DS configured as in that repo. If you follow the
 instructions there, you'll clone this repo anyway, so it all makes sense, hopefully.
@@ -43,8 +45,10 @@ cd aci
 python3 -m venv venv
 source venv/bin/activate
 pip install
-./make_acis.py
-# Paste the output into the playbook
+# For Ansible, past the output into the playbook:
+./make_acis.py -y -s "{{ dirsrv_suffix }}"
+# Alternatively, as a LDIF file (replace with real suffix):
+./make_acis.py -l -s "dc=example,dc=com"
 ./test_acis.py
 # Watch test output
 ```
