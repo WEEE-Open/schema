@@ -109,6 +109,17 @@ attributeTypes: ( 2.25.100841824846419382782883384063386193490.1.9
 #
 #---------------------------------------------------------------------
 #
+attributeTypes: ( 2.25.100841824846419382782883384063386193490.1.10
+  NAME 'weeeOpenUniqueId'
+  DESC 'UUID but it can be exported and imported for backups, unlike nsUniqueId'
+  EQUALITY caseIgnoreMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  SINGLE-VALUE
+  X-ORIGIN 'WEEE Open'
+  )
+#
+#---------------------------------------------------------------------
+#
 objectClasses: ( 2.25.100841824846419382782883384063386193490.2.1
   NAME 'weeeOpenPerson'
   SUP ( inetOrgPerson $ schacPersonalCharacteristics $ schacLinkageIdentifiers $ telegramAccount )
