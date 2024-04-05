@@ -48,4 +48,4 @@ jobs:
       - name: Run test script
         working-directory: ./aci
         run: |
-          python ci_test_acis.py
+          pytest test_acis.py

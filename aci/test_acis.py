@@ -13,16 +13,16 @@ PASSWORD = os.getenv('TEST_PASSWORD')
 SUFFIX = os.getenv('TEST_SUFFIX')
 ACI_LDIF = os.getenv('TEST_ACI_LDIF')
 
-if len(LDAP_CONNECTION_STRING) <= 0:
+if LDAP_CONNECTION_STRING is None or len(LDAP_CONNECTION_STRING) <= 0:
 	print("Set the env variable TEST_LDAP_CONNECTION_STRING")
 	exit(1)
-if len(PASSWORD) <= 0:
+if PASSWORD is None or len(PASSWORD) <= 0:
 	print("Set the env variable TEST_PASSWORD")
 	exit(1)
-if len(SUFFIX) <= 0:
+if SUFFIX is None or len(SUFFIX) <= 0:
 	print("Set the env variable TEST_SUFFIX")
 	exit(1)
-if len(ACI_LDIF) <= 0:
+if ACI_LDIF is None or len(ACI_LDIF) <= 0:
 	print("Set the env variable TEST_ACI_LDIF")
 	exit(1)
 
