@@ -50,7 +50,7 @@ pip install -r requirements.txt
 # Alternatively, as a LDIF file (replace with real suffix):
 ./make_acis.py -l -s "dc=example,dc=test"
 # Create LDIF file with ACIs for tests:
-./make_acis.py -l -s "dc=example,dc=test" > aci_tmp.txt
+./make_acis.py -l -s "dc=example,dc=test" > aci_tmp.ldif
 # Required env variables for the tests
 export TEST_PASSWORD="secret1"
 export TEST_LDAP_CONNECTION_STRING="ldap://ldap1.sso.local:389"

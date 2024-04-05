@@ -7,7 +7,7 @@ env:
   TEST_PASSWORD: "asd"
   TEST_LDAP_CONNECTION_STRING: "ldap://dirsrv:3389"
   TEST_SUFFIX: "dc=example,dc=test"
-  TEST_ACI_LDIF: "aci_tmp.txt"
+  TEST_ACI_LDIF: "aci_tmp.ldif"
 
 jobs:
   run-tests:
@@ -44,7 +44,7 @@ jobs:
       - name: Generate ACIs
         working-directory: ./aci
         run: |
-          python make_acis.py -l -s $TEST_SUFFIX
+          python make_acis.py -l -s $TEST_SUFFIX > aci_tmp.ldif
       - name: Run test script
         working-directory: ./aci
         run: |
