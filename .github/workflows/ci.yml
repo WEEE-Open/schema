@@ -5,7 +5,7 @@ on:
 
 env:
   TEST_PASSWORD: "asd"
-  TEST_LDAP_CONNECTION_STRING: "ldap://dirsrv:3389"
+  TEST_LDAP_CONNECTION_STRING: "ldap://localhost:3389"
   TEST_SUFFIX: "dc=example,dc=test"
   TEST_ACI_LDIF: "aci_tmp.ldif"
 
@@ -22,6 +22,7 @@ jobs:
           - 3389:3389
         env:
           DS_SUFFIX_NAME: ${{env.TEST_SUFFIX}}
+          SUFFIX_NAME: ${{env.TEST_SUFFIX}}
           DS_DM_PASSWORD: ${{env.TEST_PASSWORD}}
         options: >-
           --health-cmd "dsctl localhost healthcheck --check backends:localhost:search" --health-interval 10s --health-timeout 5s --health-retries 5
@@ -34,10 +35,13 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Install xmllint
+      - name: Install package dependencies
         run: |
-          sudo apt-get install -y libsasl2-dev python-dev-is-python3 libldap2-dev libssl-dev
-      - name: Install dependencies
+          sudo apt-get install -y python3-lib389 libsasl2-dev python-dev-is-python3 libldap2-dev libssl-dev
+      - name:  Actually create the suffix
+        run: |
+          dsconf -D "cn=Directory Manager" -w "$TEST_PASSWORD" $TEST_LDAP_CONNECTION_STRING backend create --create-suffix --suffix="$TEST_SUFFIX" --be-name="userRoot"
+      - name: Install Python dependencies
         working-directory: ./aci
         run: |
           pip install -r requirements.txt
