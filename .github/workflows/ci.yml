@@ -44,7 +44,7 @@ jobs:
       - name: Generate ACIs
         working-directory: ./aci
         run: |
-          python make_aci.py $TEST_SUFFIX
+          python make_acis.py $TEST_SUFFIX
       - name: Run test script
         working-directory: ./aci
         run: |
