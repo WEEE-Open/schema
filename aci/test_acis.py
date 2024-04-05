@@ -73,7 +73,7 @@ def reset_database():
 			except ldap.NO_SUCH_OBJECT:
 				pass
 
-		with open('tests/everything.ldif', 'rb') as f:
+		with open('everything.ldif', 'rb') as f:
 			parser = MyLDIFWriter(f, conn)
 			parser.parse()
 

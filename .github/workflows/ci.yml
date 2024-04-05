@@ -50,7 +50,7 @@ jobs:
       - name: Generate ACIs
         working-directory: ./aci
         run: |
-          python make_acis.py -l -s $TEST_SUFFIX > aci_tmp.ldif
+          python make_acis.py -l -s $TEST_SUFFIX > $TEST_ACI_LDIF
       - name: Run test script
         working-directory: ./aci
         run: |
