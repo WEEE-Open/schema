@@ -1,12 +1,30 @@
 #!/usr/bin/env python3
+import os
 
 import ldap
 import ldif
 from ldap.modlist import addModlist
 import pytest
 
+import sys
 
-SUFFIX = 'dc=sso,dc=local'
+LDAP_CONNECTION_STRING = os.getenv('TEST_LDAP_CONNECTION_STRING')
+PASSWORD = os.getenv('TEST_PASSWORD')
+SUFFIX = os.getenv('TEST_SUFFIX')
+ACI_LDIF = os.getenv('TEST_ACI_LDIF')
+
+if len(LDAP_CONNECTION_STRING) <= 0:
+	print("Set the env variable TEST_LDAP_CONNECTION_STRING")
+	exit(1)
+if len(PASSWORD) <= 0:
+	print("Set the env variable TEST_PASSWORD")
+	exit(1)
+if len(SUFFIX) <= 0:
+	print("Set the env variable TEST_SUFFIX")
+	exit(1)
+if len(ACI_LDIF) <= 0:
+	print("Set the env variable TEST_ACI_LDIF")
+	exit(1)
 
 
 class MyLDIFWriter(ldif.LDIFParser):
@@ -40,7 +58,7 @@ def save_acis(conn: ldap.ldapobject.SimpleLDAPObject, base_dn: str):
 
 @pytest.fixture(autouse=True)
 def reset_database():
-	with LdapConnection("cn=Directory Manager", "secret1") as conn:
+	with LdapConnection("cn=Directory Manager", PASSWORD) as conn:
 		things = (
 			f'ou=Groups,{SUFFIX}',
 			f'ou=People,{SUFFIX}',
@@ -56,6 +74,10 @@ def reset_database():
 				pass
 
 		with open('tests/everything.ldif', 'rb') as f:
+			parser = MyLDIFWriter(f, conn)
+			parser.parse()
+
+		with open(ACI_LDIF, 'rb') as f:
 			parser = MyLDIFWriter(f, conn)
 			parser.parse()
 
@@ -111,7 +133,7 @@ class LdapConnection:
 		self.password = password
 
 	def __enter__(self):
-		self.conn = ldap.initialize('ldap://ldap1.sso.local:389')
+		self.conn = ldap.initialize(LDAP_CONNECTION_STRING)
 
 		self.conn.protocol_version = ldap.VERSION3
 		# l.set_option(ldap.OPT_X_TLS, 1)

@@ -1,0 +1,43 @@
+name: CI
+on:
+  push:
+  pull_request:
+
+env:
+  TEST_PASSWORD: "asd"
+  TEST_LDAP_CONNECTION_STRING: "ldap://dirsrv:3389"
+  TEST_SUFFIX: "dc=example,dc=test"
+  TEST_ACI_LDIF: "aci_tmp.txt"
+
+jobs:
+  run-tests:
+    strategy:
+      matrix:
+        dirsrv: [ '2.4', 'latest' ]
+
+    services:
+      dirsrv:
+        image: "389ds/dirsrv:${{ matrix.dirsrv }}"
+        ports:
+          - 3389:3389
+        env:
+          DS_SUFFIX_NAME: ${{env.TEST_SUFFIX}}
+          DS_DM_PASSWORD: ${{env.TEST_PASSWORD}}
+        options: >-
+          --health-cmd "dsctl localhost healthcheck --check backends:localhost:search" --health-interval 10s --health-timeout 5s --health-retries 5
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup Python
+        uses: actions/setup-python@v5
+      - name: Install dependencies
+        run: |
+          cd aci && pip install -r requirements.txt
+      - name: Generate ACIs
+        run: |
+          cd aci && python make_aci.py $TEST_SUFFIX
+      - name: Run test script
+        run: |
+          cd aci && python ci_test_acis.py

@@ -44,11 +44,18 @@ The workflow for making ACIs and testing should be something like this:
 cd aci
 python3 -m venv venv
 source venv/bin/activate
-pip install
+pip install -r requirements.txt
 # For Ansible, past the output into the playbook:
 ./make_acis.py -y -s "{{ dirsrv_suffix }}"
 # Alternatively, as a LDIF file (replace with real suffix):
-./make_acis.py -l -s "dc=example,dc=com"
+./make_acis.py -l -s "dc=example,dc=test"
+# Create LDIF file with ACIs for tests:
+./make_acis.py -l -s "dc=example,dc=test" > aci_tmp.txt
+# Required env variables for the tests
+export TEST_PASSWORD="secret1"
+export TEST_LDAP_CONNECTION_STRING="ldap://ldap1.sso.local:389"
+export TEST_SUFFIX="dc=example,dc=test"
+export TEST_ACI_LDIF="aci_tmp.txt"
 ./test_acis.py
 # Watch test output
 ```
