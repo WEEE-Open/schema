@@ -6,12 +6,12 @@ import ldif
 from ldap.modlist import addModlist
 import pytest
 
-import sys
-
 LDAP_CONNECTION_STRING = os.getenv('TEST_LDAP_CONNECTION_STRING')
 PASSWORD = os.getenv('TEST_PASSWORD')
 SUFFIX = os.getenv('TEST_SUFFIX')
 ACI_LDIF = os.getenv('TEST_ACI_LDIF')
+IMPORT_SCHEMA = os.getenv('TEST_IMPORT_SCHEMA') is not None
+IMPORT_SCHEMA_DONE = False
 
 if LDAP_CONNECTION_STRING is None or len(LDAP_CONNECTION_STRING) <= 0:
 	print("Set the env variable TEST_LDAP_CONNECTION_STRING")
@@ -27,7 +27,7 @@ if ACI_LDIF is None or len(ACI_LDIF) <= 0:
 	exit(1)
 
 
-class MyLDIFWriter(ldif.LDIFParser):
+class LdifReaderAdd(ldif.LDIFParser):
 	def __init__(self, input_file, conn: ldap.ldapobject.SimpleLDAPObject):
 		self.conn = conn
 		super().__init__(input_file)
@@ -35,6 +35,38 @@ class MyLDIFWriter(ldif.LDIFParser):
 	def handle(self, dn, entry):
 		addthis = addModlist(entry)
 		self.conn.add_s(dn, addthis)
+
+
+class LdifReaderThatUsesModifyInsteadOfAdd(ldif.LDIFParser):
+	def __init__(self, input_file, conn: ldap.ldapobject.SimpleLDAPObject):
+		self.conn = conn
+		super().__init__(input_file)
+
+	def handle(self, dn, entry):
+		addthis = addModlist(entry)
+		addthis_but_in_the_other_format = []
+		for t in addthis:
+			addthis_but_in_the_other_format.append((ldap.MOD_ADD, t[0], t[1]))
+		self.conn.modify_s(dn, addthis_but_in_the_other_format)
+
+
+class LdifReaderThatParsesLdifFilesWithChangetype(ldif.LDIFParser):
+	def __init__(self, input_file, conn: ldap.ldapobject.SimpleLDAPObject):
+		self.conn = conn
+		super().__init__(input_file)
+
+	def handle(self, dn, entry):
+		addthis = addModlist(entry)
+		addthis_but_in_the_other_format = []
+		mod = ldap.MOD_ADD
+		for t in addthis:
+			if t[0] == 'changetype':
+				continue
+			if t[0] == 'replace':
+				mod = ldap.MOD_REPLACE
+				continue
+			addthis_but_in_the_other_format.append((mod, t[0], t[1]))
+		self.conn.modify_s(dn, addthis_but_in_the_other_format)
 
 
 def recursive_delete_subtree(conn: ldap.ldapobject.SimpleLDAPObject, base_dn: str):
@@ -58,31 +90,79 @@ def save_acis(conn: ldap.ldapobject.SimpleLDAPObject, base_dn: str):
 
 @pytest.fixture(autouse=True)
 def reset_database():
+	global IMPORT_SCHEMA, IMPORT_SCHEMA_DONE
+
 	with LdapConnection("cn=Directory Manager", PASSWORD) as conn:
 		things = (
 			f'ou=Groups,{SUFFIX}',
 			f'ou=People,{SUFFIX}',
-			f'ou=Services,{SUFFIX}'
+			f'ou=Services,{SUFFIX}',
+			f'ou=Invites,{SUFFIX}',
 		)
 
-		# acis = []
 		for thing in things:
 			try:
-				# acis.append(save_acis(conn, thing))
-				recursive_delete_subtree(conn, thing)
+				recursive_delete(conn, thing)
 			except ldap.NO_SUCH_OBJECT:
 				pass
 
+		if IMPORT_SCHEMA and not IMPORT_SCHEMA_DONE:
+			# We need to split schemas and build LDIF files on the fly: https://stackoverflow.com/a/69899256
+			# Also, each schema may depend on another one
+			with open('schema_tmp_objectClasses.ldif', 'w') as ldif_oc, open('schema_tmp_attributeTypes.ldif', 'w') as ldif_at:
+				# Write the header
+				ldif_at.write("version: 1\n\ndn: cn=schema\n")
+				ldif_oc.write("version: 1\n\ndn: cn=schema\n")
+				for schema in ('../97schac.ldif', '../98ssh.ldif', '../98telegram.ldif', '../98weeeopen.ldif'):
+					with open(schema, 'r') as file:
+						current_text = "version: 1\n\n"
+						current_section = None
+						for line in file:
+							low = line.lower()
+							if low.startswith("objectclasses: ") or low.startswith("attributetypes: "):
+								if not current_section or not low.startswith(current_section):
+									if current_section:
+										if current_section == "objectclasses: ":
+											ldif_oc.write(current_text)
+										else:
+											ldif_at.write(current_text)
+									current_text = ""
+									current_section = "objectclasses: " if low.startswith("objectclasses: ") else "attributetypes: "
+							current_text += line
+						if current_section == "objectclasses: ":
+							ldif_oc.write(current_text)
+						elif current_section == "attributetypes: ":
+							ldif_at.write(current_text)
+						else:
+							raise RuntimeError(f"Not a valid schema file: {schema}")
+
+			with open('schema_tmp_attributeTypes.ldif', 'rb') as f:
+				parser = LdifReaderThatUsesModifyInsteadOfAdd(f, conn)
+				parser.parse()
+			with open('schema_tmp_objectClasses.ldif', 'rb') as f:
+				parser = LdifReaderThatUsesModifyInsteadOfAdd(f, conn)
+				parser.parse()
+
+			IMPORT_SCHEMA_DONE = True
+
+		# Absolutely required under every circumstance, thankfully it works even though it's not officially supported
+		conn.modify_s('cn=config', [(ldap.MOD_REPLACE, 'nsslapd-dynamic-plugins', b'on')])
+		conn.modify_s('cn=MemberOf Plugin,cn=plugins,cn=config', [(ldap.MOD_REPLACE, 'nsslapd-pluginEnabled', b'on')])
+
 		with open('everything.ldif', 'rb') as f:
-			parser = MyLDIFWriter(f, conn)
+			parser = LdifReaderAdd(f, conn)
 			parser.parse()
 
 		with open(ACI_LDIF, 'rb') as f:
-			parser = MyLDIFWriter(f, conn)
+			parser = LdifReaderThatParsesLdifFilesWithChangetype(f, conn)
 			parser.parse()
 
-		# for dn, values in zip(things, acis):
-		# 	conn.modify_s(dn, ldap.modlist.modifyModlist({}, values))
+		with open('../policies.ldif', 'rb') as f:
+			parser = LdifReaderThatParsesLdifFilesWithChangetype(f, conn)
+			parser.parse()
+
+	# for dn, values in zip(things, acis):
+	# 	conn.modify_s(dn, ldap.modlist.modifyModlist({}, values))
 
 
 @pytest.fixture()
@@ -95,19 +175,20 @@ def example_user():
 		('sn', [b'User']),
 		('mobile', [b'+39010101011011']),
 		('telegramID', [b'1337']),
-		('uid', [b'example.user'])
+		('uid', [b'example.user']),
+		('weeeOpenUniqueId', [b'798aa6f8-7a9a4b96-931da47d-669c0674']),
 	]
 
 
 @pytest.fixture()
 def example_user_with_password(example_user):
 	example_user.append(('userPassword', [b'{PBKDF2_SHA256}AAAnENBOg9Pr7VfWGJEKpYaCNCvCTpe8xZAeCkcneca7Gir'
-								b'KbHwLQ24j9I7u2c1vXSPnsWZzd4OoKETdAJZzxUhFJvlqBI7P71M7ts+t9QHJoo4Yx5TcSOCoz2'
-								b'zNGtnjlQqi+rptAG5yNmiYJ1jULvXPHkNtr6Ckkwr3SgcpKWpJDLGLXNuhJkww/jv7D0eC/I9jz'
-								b'nkOO5lJwMBKmxuWwxLjFjJ7MK1YGFPpUkxZuam3iy2X6kmPEQXCZdhE9dgATjK5I2WlgQOAZ34H'
-								b'ouJHxuzV83JG+SJnYpE5rzDfuSmhaCZfmwWQpZCPNU1QKx+CrAeUht/Vrk4iM7ScJM+si/eTOaK'
-								b'OCVGvpr2xZEvIy0xOXTAF6UW5Acos1a8jtKBJf4zmlsfKGByXQPNj38bd6CyVdKie1R6OT+YtPN'
-								b'EkmrcSJCNc']))
+	                                      b'KbHwLQ24j9I7u2c1vXSPnsWZzd4OoKETdAJZzxUhFJvlqBI7P71M7ts+t9QHJoo4Yx5TcSOCoz2'
+	                                      b'zNGtnjlQqi+rptAG5yNmiYJ1jULvXPHkNtr6Ckkwr3SgcpKWpJDLGLXNuhJkww/jv7D0eC/I9jz'
+	                                      b'nkOO5lJwMBKmxuWwxLjFjJ7MK1YGFPpUkxZuam3iy2X6kmPEQXCZdhE9dgATjK5I2WlgQOAZ34H'
+	                                      b'ouJHxuzV83JG+SJnYpE5rzDfuSmhaCZfmwWQpZCPNU1QKx+CrAeUht/Vrk4iM7ScJM+si/eTOaK'
+	                                      b'OCVGvpr2xZEvIy0xOXTAF6UW5Acos1a8jtKBJf4zmlsfKGByXQPNj38bd6CyVdKie1R6OT+YtPN'
+	                                      b'EkmrcSJCNc']))
 	return example_user
 
 

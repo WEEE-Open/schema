@@ -8,12 +8,13 @@ env:
   TEST_LDAP_CONNECTION_STRING: "ldap://localhost:3389"
   TEST_SUFFIX: "dc=example,dc=test"
   TEST_ACI_LDIF: "aci_tmp.ldif"
+  TEST_IMPORT_SCHEMA: 1
 
 jobs:
   run-tests:
     strategy:
       matrix:
-        dirsrv: [ '2.4', 'latest' ]
+        dirsrv: [ '3.0', 'latest' ]
 
     services:
       dirsrv:
@@ -22,7 +23,6 @@ jobs:
           - 3389:3389
         env:
           DS_SUFFIX_NAME: ${{env.TEST_SUFFIX}}
-          SUFFIX_NAME: ${{env.TEST_SUFFIX}}
           DS_DM_PASSWORD: ${{env.TEST_PASSWORD}}
         options: >-
           --health-cmd "dsctl localhost healthcheck --check backends:localhost:search" --health-interval 10s --health-timeout 5s --health-retries 5

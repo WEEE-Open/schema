@@ -1,19 +1,24 @@
 version: 1
 
-#dn: ou=Groups,dc=example,dc=test
-#objectClass: organizationalunit
-#objectClass: top
-#ou: Groups
+dn: ou=Groups,dc=example,dc=test
+objectClass: organizationalunit
+objectClass: top
+ou: Groups
 
-#dn: ou=People,dc=example,dc=test
-#objectClass: organizationalunit
-#objectClass: top
-#ou: People
+dn: ou=People,dc=example,dc=test
+objectClass: organizationalunit
+objectClass: top
+ou: People
 
-#dn: ou=Services,dc=example,dc=test
-#objectClass: organizationalunit
-#objectClass: top
-#ou: Services
+dn: ou=Services,dc=example,dc=test
+objectClass: organizationalunit
+objectClass: top
+ou: Services
+
+dn: ou=Invites,dc=example,dc=test
+objectClass: organizationalunit
+objectClass: top
+ou: Services
 
 dn: cn=Keycloak,ou=Services,dc=example,dc=test
 objectClass: simpleSecurityObject
@@ -90,6 +95,7 @@ userPassword: {PBKDF2_SHA256}AAAnENBOg9Pr7VfWGJEKpYaCNCvCTpe8xZAeCkcneca7Gir
  ouJHxuzV83JG+SJnYpE5rzDfuSmhaCZfmwWQpZCPNU1QKx+CrAeUht/Vrk4iM7ScJM+si/eTOaK
  OCVGvpr2xZEvIy0xOXTAF6UW5Acos1a8jtKBJf4zmlsfKGByXQPNj38bd6CyVdKie1R6OT+YtPN
  EkmrcSJCNc
+weeeOpenUniqueId: eae091f7-5f0a-43d4-ad31-fb2f33be8628
 
 dn: uid=test.user,ou=People,dc=example,dc=test
 objectClass: telegramAccount
@@ -114,6 +120,7 @@ userPassword: {PBKDF2_SHA256}AAAnENBOg9Pr7VfWGJEKpYaCNCvCTpe8xZAeCkcneca7Gir
  ouJHxuzV83JG+SJnYpE5rzDfuSmhaCZfmwWQpZCPNU1QKx+CrAeUht/Vrk4iM7ScJM+si/eTOaK
  OCVGvpr2xZEvIy0xOXTAF6UW5Acos1a8jtKBJf4zmlsfKGByXQPNj38bd6CyVdKie1R6OT+YtPN
  EkmrcSJCNc
+weeeOpenUniqueId: a53fd382-2ffe-4b63-8576-0140ea80117c
 
 dn: uid=test2.user2,ou=People,dc=example,dc=test
 objectClass: telegramAccount
@@ -136,6 +143,7 @@ userPassword: {PBKDF2_SHA256}AAAnENBOg9Pr7VfWGJEKpYaCNCvCTpe8xZAeCkcneca7Gir
  ouJHxuzV83JG+SJnYpE5rzDfuSmhaCZfmwWQpZCPNU1QKx+CrAeUht/Vrk4iM7ScJM+si/eTOaK
  OCVGvpr2xZEvIy0xOXTAF6UW5Acos1a8jtKBJf4zmlsfKGByXQPNj38bd6CyVdKie1R6OT+YtPN
  EkmrcSJCNc
+weeeOpenUniqueId: c8b628a4-06f8-4782-809d-259750ae4d39
 
 dn: uid=test.hr,ou=People,dc=example,dc=test
 objectClass: telegramAccount
@@ -158,53 +166,33 @@ userPassword: {PBKDF2_SHA256}AAAnENBOg9Pr7VfWGJEKpYaCNCvCTpe8xZAeCkcneca7Gir
  ouJHxuzV83JG+SJnYpE5rzDfuSmhaCZfmwWQpZCPNU1QKx+CrAeUht/Vrk4iM7ScJM+si/eTOaK
  OCVGvpr2xZEvIy0xOXTAF6UW5Acos1a8jtKBJf4zmlsfKGByXQPNj38bd6CyVdKie1R6OT+YtPN
  EkmrcSJCNc
-
-dn: uid=wso2admin,ou=People,dc=example,dc=test
-objectClass: telegramAccount
-objectClass: schacPersonalCharacteristics
-objectClass: schacLinkageIdentifiers
-objectClass: top
-objectClass: person
-objectClass: organizationalPerson
-objectClass: inetOrgPerson
-objectClass: weeeOpenPerson
-cn: WSO2 Admin
-sn: Admin
-uid: wso2admin
-userPassword: {PBKDF2_SHA256}AAAnENBOg9Pr7VfWGJEKpYaCNCvCTpe8xZAeCkcneca7Gir
- KbHwLQ24j9I7u2c1vXSPnsWZzd4OoKETdAJZzxUhFJvlqBI7P71M7ts+t9QHJoo4Yx5TcSOCoz2
- zNGtnjlQqi+rptAG5yNmiYJ1jULvXPHkNtr6Ckkwr3SgcpKWpJDLGLXNuhJkww/jv7D0eC/I9jz
- nkOO5lJwMBKmxuWwxLjFjJ7MK1YGFPpUkxZuam3iy2X6kmPEQXCZdhE9dgATjK5I2WlgQOAZ34H
- ouJHxuzV83JG+SJnYpE5rzDfuSmhaCZfmwWQpZCPNU1QKx+CrAeUht/Vrk4iM7ScJM+si/eTOaK
- OCVGvpr2xZEvIy0xOXTAF6UW5Acos1a8jtKBJf4zmlsfKGByXQPNj38bd6CyVdKie1R6OT+YtPN
- EkmrcSJCNc
+weeeOpenUniqueId: 7fcaa06e-d78c-4e03-bbc7-634759a92dfd
 
 # The MemberOf plugin will add the memberOf attribute automatically, if these are added after users
 
 dn: cn=Testers,ou=Groups,dc=example,dc=test
 objectClass: groupOfNames
+objectClass: weeeOpenGroup
 objectClass: top
 cn: Testers
 description: People who can test this thing from their test group
 member: uid=test.user,ou=People,dc=example,dc=test
 member: uid=test2.user2,ou=People,dc=example,dc=test
+weeeOpenUniqueId: ae5dfc16-f80f-44ea-aeea-5d6648a1d382
 
 dn: cn=ExampleGroup,ou=Groups,dc=example,dc=test
 objectClass: groupOfNames
+objectClass: weeeOpenGroup
 objectClass: top
 cn: ExampleGroup
 description: Example
-
-dn: cn=WSO2_Admin,ou=Groups,dc=example,dc=test
-objectClass: groupOfNames
-objectClass: top
-cn: WSO2_Admin
-description: WSO2 admin special group
-member: uid=wso2admin,ou=People,dc=example,dc=test
+weeeOpenUniqueId: a023d274-ca9b-4980-b5e2-d4f5ce8412ab
 
 dn: cn=HR,ou=Groups,dc=example,dc=test
 objectClass: groupOfNames
+objectClass: weeeOpenGroup
 objectClass: top
 cn: HR
 description: People who can manage HR entries
 member: uid=test.hr,ou=People,dc=example,dc=test
+weeeOpenUniqueId: 3c5f5710-d94c-4eb1-86f8-27e82b7f6366
