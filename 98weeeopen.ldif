@@ -125,6 +125,7 @@ objectClasses: ( 2.25.100841824846419382782883384063386193490.2.1
   SUP ( inetOrgPerson $ schacPersonalCharacteristics $ schacLinkageIdentifiers $ telegramAccount )
   STRUCTURAL
   MAY ( safetyTestDate $ degreeCourse $ weeelabNickname $ hasKey $ signedSir $ websiteDescription $ pronouns )
+  MUST ( weeeOpenUniqueId )
   X-ORIGIN 'WEEE Open'
   )
 #
@@ -134,5 +135,14 @@ objectClasses: ( 2.25.100841824846419382782883384063386193490.2.2
   NAME 'inviteCodeContainer'
   AUXILIARY
   MAY ( inviteCode )
+  X-ORIGIN 'WEEE Open'
+  )
+#
+#---------------------------------------------------------------------
+#
+objectClasses: ( 2.25.100841824846419382782883384063386193490.2.3
+  NAME 'weeeOpenGroup'
+  AUXILIARY
+  MUST ( weeeOpenUniqueId )
   X-ORIGIN 'WEEE Open'
   )
