@@ -1,4 +1,5 @@
 .idea/
 venv/
 aci_tmp.ldif
+aci/schema_tmp_*.ldif
 __pycache__/

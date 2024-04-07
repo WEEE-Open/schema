@@ -24,6 +24,10 @@ The very large OID from the UUID arc (i.e. `2.25.1008418248464193827828833840633
 
 There are a few more bits and bobs in `98weeeopen.ldif`. Not very interesting.
 
+## Password Policies
+
+Use `policies.yml` to replace existing values.
+
 ## ACI
 
 The `aci` directory contains some ACIs for 389DS and tests related to those.
@@ -56,6 +60,8 @@ export TEST_PASSWORD="secret1"
 export TEST_LDAP_CONNECTION_STRING="ldap://ldap1.sso.local:389"
 export TEST_SUFFIX="dc=example,dc=test"
 export TEST_ACI_LDIF="aci_tmp.txt"
+export TEST_IMPORT_SCHEMA=1 # To import the schema during tests, do not set at all if you want to import manually
+# Run tests
 ./test_acis.py
 # Watch test output
 ```

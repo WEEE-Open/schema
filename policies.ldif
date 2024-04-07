@@ -1,0 +1,31 @@
+dn: cn=config
+changetype: modify
+replace: passwordCheckSyntax
+passwordCheckSyntax: on
+-
+replace: passwordMinLength
+passwordMinLength: 12
+-
+# Interesting attribute, so many hardcoded things... cannot be disabled, accepts value 1-64, this will be so annoying but let's try anyway...
+replace: PasswordMinTokenLength
+PasswordMinTokenLength: 16
+-
+# "password minimum number of categories "0" is invalid. The minimum number of categories must range from 1 to 5."
+# And the reference says the minimum is 0...
+replace: passwordMinCategories
+passwordMinCategories: 1
+-
+replace: passwordLockout
+passwordLockout: on
+-
+replace: passwordMaxFailure
+passwordMaxFailure: 6
+-
+replace: passwordLockoutDuration
+passwordLockoutDuration: 120
+-
+replace: passwordLegacyPolicy
+passwordLegacyPolicy: off
+-
+replace: passwordIsGlobalPolicy
+passwordIsGlobalPolicy: on
