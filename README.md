@@ -42,7 +42,7 @@ Alternatively, `make_acis.py` can also output a LDIF file.
 [the "sso" repo](https://github.com/WEEE-Open/sso). It requires 389DS configured as in that repo. If you follow the
 instructions there, you'll clone this repo anyway, so it all makes sense, hopefully.
 
-The workflow for making ACIs and testing should be something like this:
+To create ACIs:
 
 ```shell
 cd aci
@@ -55,13 +55,18 @@ pip install -r requirements.txt
 ./make_acis.py -l -s "dc=example,dc=test"
 # Create LDIF file with ACIs for tests:
 ./make_acis.py -l -s "dc=example,dc=test" > aci_tmp.ldif
+```
+To test them:
+
+```shell
+# Run 389DS in a container or in any other way of your choice
+docker run --name dirsrv -p 3389:3389 -e DS_SUFFIX_NAME="dc=example,dc=test" -e DS_DM_PASSWORD="asd" 389ds/dirsrv:latest
 # Required env variables for the tests
-export TEST_PASSWORD="secret1"
-export TEST_LDAP_CONNECTION_STRING="ldap://ldap1.sso.local:389"
+export TEST_PASSWORD="asd"
+export TEST_LDAP_CONNECTION_STRING="ldap://disrv:3389"
 export TEST_SUFFIX="dc=example,dc=test"
 export TEST_ACI_LDIF="aci_tmp.txt"
 export TEST_IMPORT_SCHEMA=1 # To import the schema during tests, do not set at all if you want to import manually
-# Run tests
+# Run tests, this will also create a backend and DIT
 ./test_acis.py
-# Watch test output
 ```
