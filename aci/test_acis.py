@@ -143,7 +143,7 @@ def reset_database():
 				# Write the header
 				ldif_at.write("version: 1\n\ndn: cn=schema\n")
 				ldif_oc.write("version: 1\n\ndn: cn=schema\n")
-				for schema in ('../97schac.ldif', '../98ssh.ldif', '../98telegram.ldif', '../98weeeopen.ldif'):
+				for schema in ('../97schac.ldif', '../98ssh.ldif', '../98sshAsText.ldif', '../98telegram.ldif', '../98weeeopen.ldif'):
 					with open(schema, 'r') as file:
 						current_text = "version: 1\n\n"
 						current_section = None
