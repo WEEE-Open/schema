@@ -83,11 +83,6 @@ def recursive_delete(conn: ldap.ldapobject.SimpleLDAPObject, base_dn: str):
 	conn.delete_s(base_dn)
 
 
-def save_acis(conn: ldap.ldapobject.SimpleLDAPObject, base_dn: str):
-	search = conn.search_s(base_dn, ldap.SCOPE_BASE, None, ['aci'])
-	return search[0][1]
-
-
 @pytest.fixture(autouse=True)
 def reset_database():
 	global IMPORT_SCHEMA, IMPORT_SCHEMA_DONE
@@ -132,6 +127,7 @@ def reset_database():
 			f'ou=People,{SUFFIX}',
 			f'ou=Services,{SUFFIX}',
 			f'ou=Invites,{SUFFIX}',
+			f'ou=Machines,{SUFFIX}',
 		)
 
 		for thing in things:
@@ -303,7 +299,8 @@ def test_fail_password_change_constraint(bind_dn):
 
 @pytest.mark.parametrize("bind_dn",
 	[f"uid=test2.user2,ou=People,{SUFFIX}", f"cn=Test,ou=Services,{SUFFIX}", f"cn=Nextcloud,ou=Services,{SUFFIX}",
-	 f"uid=test.user,ou=People,{SUFFIX}", f"cn=Keycloak,ou=Services,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}"])
+	 f"uid=test.user,ou=People,{SUFFIX}", f"cn=Keycloak,ou=Services,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}",
+	 f"cn=Schifomacchina,ou=Machines,{SUFFIX}", f"cn=Rosetta,ou=Machines,{SUFFIX}",])
 def test_deny_password_change(bind_dn):
 	with LdapConnection(bind_dn, "asd") as conn:
 		with pytest.raises(ldap.INSUFFICIENT_ACCESS):
@@ -314,7 +311,8 @@ def test_deny_password_change(bind_dn):
 
 @pytest.mark.parametrize("bind_dn",
 	[f"uid=test.user,ou=People,{SUFFIX}", f"cn=Keycloak,ou=Services,{SUFFIX}", f"cn=Test,ou=Services,{SUFFIX}",
-	 f"cn=Nextcloud,ou=Services,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}"])
+	 f"cn=Nextcloud,ou=Services,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}",
+	 f"cn=Schifomacchina,ou=Machines,{SUFFIX}", f"cn=Rosetta,ou=Machines,{SUFFIX}",])
 def test_deny_password_change_sso_service(bind_dn):
 	with LdapConnection(bind_dn, "asd") as conn:
 		with pytest.raises(ldap.INSUFFICIENT_ACCESS):
@@ -325,7 +323,8 @@ def test_deny_password_change_sso_service(bind_dn):
 
 @pytest.mark.parametrize("bind_dn",
 	[f"uid=test.user,ou=People,{SUFFIX}", f"cn=Keycloak,ou=Services,{SUFFIX}", f"cn=Test,ou=Services,{SUFFIX}",
-	 f"cn=Nextcloud,ou=Services,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}"])
+	 f"cn=Nextcloud,ou=Services,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}",
+	 f"cn=Schifomacchina,ou=Machines,{SUFFIX}", f"cn=Rosetta,ou=Machines,{SUFFIX}",])
 def test_deny_password_change_service(bind_dn):
 	with LdapConnection(bind_dn, "asd") as conn:
 		with pytest.raises(ldap.INSUFFICIENT_ACCESS):
@@ -336,7 +335,8 @@ def test_deny_password_change_service(bind_dn):
 
 @pytest.mark.parametrize("bind_dn",
 	[f"uid=test.user,ou=People,{SUFFIX}", f"cn=Keycloak,ou=Services,{SUFFIX}", f"cn=Test,ou=Services,{SUFFIX}",
-	 f"cn=Nextcloud,ou=Services,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}"])
+	 f"cn=Nextcloud,ou=Services,{SUFFIX}", f"uid=test.hr,ou=People,{SUFFIX}",
+	 f"cn=Schifomacchina,ou=Machines,{SUFFIX}", f"cn=Rosetta,ou=Machines,{SUFFIX}",])
 def test_deny_password_change_ou(bind_dn):
 	with LdapConnection(bind_dn, "asd") as conn:
 		with pytest.raises(ldap.INSUFFICIENT_ACCESS):
@@ -611,3 +611,87 @@ def test_password_lockout(example_user_with_password):
 			except ldap.INVALID_CREDENTIALS:
 				attempts += 1
 	assert attempts == 5, 'Failure after 5 attempts'
+
+
+def test_allow_read_machines():
+	with LdapConnection(f"cn=Schifomacchina,ou=Machines,{SUFFIX}", "asd") as conn:
+		result = conn.search_s(f"cn=Schifomacchina,ou=Machines,{SUFFIX}", ldap.SCOPE_BASE, None, ['*', '+'])
+		assert len(result) > 0, 'Machine data is readable'
+		expected = {
+			'objectClass',
+			'cn',
+			# 'description',
+			'member',
+			'createTimestamp',
+			'modifyTimestamp'
+		}
+		assert expected == set(result[0][1].keys()), 'All expected attributes are present'
+
+
+def test_deny_read_other_machines():
+	with LdapConnection(f"cn=Rosetta,ou=Machines,{SUFFIX}", "asd") as conn:
+		result = conn.search_s(f"cn=Schifomacchina,ou=Machines,{SUFFIX}", ldap.SCOPE_BASE, None, ['*', '+'])
+		assert len(result) == 0, 'Other machines data is not readable'
+
+
+def test_allow_machine_change_crauto():
+	test_dn = f"cn=Schifomacchina,ou=Machines,{SUFFIX}"
+	value = "test description"
+	with LdapConnection(f"cn=Crauto,ou=Services,{SUFFIX}", "asd") as conn:
+		conn.modify_s(test_dn, [(ldap.MOD_REPLACE, 'description', value)])
+		result = conn.search_s(test_dn, ldap.SCOPE_BASE, None, ['description'])
+		assert len(result) > 0, 'description exists'
+		assert value == result[0][1]['description'][0], 'description has the expected value'
+	with LdapConnection(f"cn=Schifomacchina,ou=Machines,{SUFFIX}", "asd") as conn:
+		result = conn.search_s(f"cn=Schifomacchina,ou=Machines,{SUFFIX}", ldap.SCOPE_BASE, None, ['*', '+'])
+		assert len(result) > 0, 'Machine data is readable'
+		expected = {
+			'objectClass',
+			'cn',
+			'description',
+			'member',
+			'createTimestamp',
+			'modifyTimestamp'
+		}
+		assert expected == set(result[0][1].keys()), 'All expected attributes are present'
+
+
+def test_allow_machine_add_members_crauto():
+	test_dn = f"cn=Schifomacchina,ou=Machines,{SUFFIX}"
+	with LdapConnection(f"cn=Crauto,ou=Services,{SUFFIX}", "asd") as conn:
+		result = conn.search_s(test_dn, ldap.SCOPE_BASE, None, ['member'])
+		assert len(result) == 1, 'machine has 1 member before add'
+
+		conn.modify_s(test_dn, [(ldap.MOD_REPLACE, 'member', f"uid=test.user,ou=People,{SUFFIX}")])
+		result = conn.search_s(test_dn, ldap.SCOPE_BASE, None, ['member'])
+		assert len(result) == 1, 'machine has 2 members after add'
+
+		assert {f"uid=test.user,ou=People,{SUFFIX}", f"uid=test.sysadmin,ou=People,{SUFFIX}"} == set(result[0][1]['member']), 'machine has expected members'
+
+
+def test_allow_machine_add_members_crauto():
+	test_dn = f"cn=Schifomacchina,ou=Machines,{SUFFIX}"
+	with LdapConnection(f"cn=Crauto,ou=Services,{SUFFIX}", "asd") as conn:
+		result = conn.search_s(test_dn, ldap.SCOPE_BASE, None, ['member'])
+		assert len(result) == 1, 'machine has 2 members'
+
+		conn.modify_s(test_dn, [(ldap.MOD_DELETE, 'member', f"uid=test.sysadmin,ou=People,{SUFFIX}")])
+		result = conn.search_s(test_dn, ldap.SCOPE_BASE, None, ['member'])
+		assert len(result) == 1, 'machine has 1 member'
+
+		assert {f"uid=test.user,ou=People,{SUFFIX}"} == set(result[0][1]['member']), 'machine has expected members'
+
+
+def test_allow_machine_read_crauto():
+	with LdapConnection(f"cn=Crauto,ou=Services,{SUFFIX}", "asd") as conn:
+		result = conn.search_s(f"cn=Schifomacchina,ou=Machines,{SUFFIX}", ldap.SCOPE_BASE, None, ['*', '+'])
+		assert len(result) > 0, 'Machine is readable'
+		expected = {
+			'objectClass',
+			'cn',
+			# 'description',
+			'member',
+			'createTimestamp',
+			'modifyTimestamp'
+		}
+		assert expected == set(result[0][1].keys()), 'All expected attributes are present'

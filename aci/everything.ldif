@@ -18,7 +18,12 @@ ou: Services
 dn: ou=Invites,dc=example,dc=test
 objectClass: organizationalunit
 objectClass: top
-ou: Services
+ou: Invites
+
+dn: ou=Machines,dc=example,dc=test
+objectClass: organizationalunit
+objectClass: top
+ou: Machines
 
 dn: cn=Keycloak,ou=Services,dc=example,dc=test
 objectClass: simpleSecurityObject
@@ -168,6 +173,29 @@ userPassword: {PBKDF2_SHA256}AAAnENBOg9Pr7VfWGJEKpYaCNCvCTpe8xZAeCkcneca7Gir
  EkmrcSJCNc
 weeeOpenUniqueId: 7fcaa06e-d78c-4e03-bbc7-634759a92dfd
 
+dn: uid=test.sysadmin,ou=People,dc=example,dc=test
+objectClass: telegramAccount
+objectClass: schacPersonalCharacteristics
+objectClass: schacLinkageIdentifiers
+objectClass: top
+objectClass: person
+objectClass: organizationalPerson
+objectClass: inetOrgPerson
+objectClass: weeeOpenPerson
+cn: Test Sysadmin
+sn: Sysadmin
+mobile: +39563464436
+telegramID: 1234567890
+uid: test.sysadmin
+userPassword: {PBKDF2_SHA256}AAAnENBOg9Pr7VfWGJEKpYaCNCvCTpe8xZAeCkcneca7Gir
+ KbHwLQ24j9I7u2c1vXSPnsWZzd4OoKETdAJZzxUhFJvlqBI7P71M7ts+t9QHJoo4Yx5TcSOCoz2
+ zNGtnjlQqi+rptAG5yNmiYJ1jULvXPHkNtr6Ckkwr3SgcpKWpJDLGLXNuhJkww/jv7D0eC/I9jz
+ nkOO5lJwMBKmxuWwxLjFjJ7MK1YGFPpUkxZuam3iy2X6kmPEQXCZdhE9dgATjK5I2WlgQOAZ34H
+ ouJHxuzV83JG+SJnYpE5rzDfuSmhaCZfmwWQpZCPNU1QKx+CrAeUht/Vrk4iM7ScJM+si/eTOaK
+ OCVGvpr2xZEvIy0xOXTAF6UW5Acos1a8jtKBJf4zmlsfKGByXQPNj38bd6CyVdKie1R6OT+YtPN
+ EkmrcSJCNc
+weeeOpenUniqueId: 44ecbfad-9962-43c9-855b-563d6185a5ee
+
 # The MemberOf plugin will add the memberOf attribute automatically, if these are added after users
 
 dn: cn=Testers,ou=Groups,dc=example,dc=test
@@ -196,3 +224,34 @@ cn: HR
 description: People who can manage HR entries
 member: uid=test.hr,ou=People,dc=example,dc=test
 weeeOpenUniqueId: 3c5f5710-d94c-4eb1-86f8-27e82b7f6366
+
+dn: cn=Schifomacchina,ou=Machines,dc=example,dc=test
+objectClass: groupOfNames
+objectClass: top
+objectClass: simpleSecurityObject
+objectClass: device
+cn: Schifomacchina
+member: uid=test.sysadmin,ou=People,dc=example,dc=test
+userPassword: {PBKDF2_SHA256}AAAnENBOg9Pr7VfWGJEKpYaCNCvCTpe8xZAeCkcneca7Gir
+ KbHwLQ24j9I7u2c1vXSPnsWZzd4OoKETdAJZzxUhFJvlqBI7P71M7ts+t9QHJoo4Yx5TcSOCoz2
+ zNGtnjlQqi+rptAG5yNmiYJ1jULvXPHkNtr6Ckkwr3SgcpKWpJDLGLXNuhJkww/jv7D0eC/I9jz
+ nkOO5lJwMBKmxuWwxLjFjJ7MK1YGFPpUkxZuam3iy2X6kmPEQXCZdhE9dgATjK5I2WlgQOAZ34H
+ ouJHxuzV83JG+SJnYpE5rzDfuSmhaCZfmwWQpZCPNU1QKx+CrAeUht/Vrk4iM7ScJM+si/eTOaK
+ OCVGvpr2xZEvIy0xOXTAF6UW5Acos1a8jtKBJf4zmlsfKGByXQPNj38bd6CyVdKie1R6OT+YtPN
+ EkmrcSJCNc
+
+
+dn: cn=Rosetta,ou=Machines,dc=example,dc=test
+objectClass: groupOfNames
+objectClass: top
+objectClass: simpleSecurityObject
+objectClass: device
+cn: Rosetta
+member: uid=test.sysadmin,ou=People,dc=example,dc=test
+userPassword: {PBKDF2_SHA256}AAAnENBOg9Pr7VfWGJEKpYaCNCvCTpe8xZAeCkcneca7Gir
+ KbHwLQ24j9I7u2c1vXSPnsWZzd4OoKETdAJZzxUhFJvlqBI7P71M7ts+t9QHJoo4Yx5TcSOCoz2
+ zNGtnjlQqi+rptAG5yNmiYJ1jULvXPHkNtr6Ckkwr3SgcpKWpJDLGLXNuhJkww/jv7D0eC/I9jz
+ nkOO5lJwMBKmxuWwxLjFjJ7MK1YGFPpUkxZuam3iy2X6kmPEQXCZdhE9dgATjK5I2WlgQOAZ34H
+ ouJHxuzV83JG+SJnYpE5rzDfuSmhaCZfmwWQpZCPNU1QKx+CrAeUht/Vrk4iM7ScJM+si/eTOaK
+ OCVGvpr2xZEvIy0xOXTAF6UW5Acos1a8jtKBJf4zmlsfKGByXQPNj38bd6CyVdKie1R6OT+YtPN
+ EkmrcSJCNc
