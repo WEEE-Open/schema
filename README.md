@@ -14,6 +14,10 @@ The file `97schac.ldif` comes from the [official schema](https://wiki.refeds.org
 
 Located at `98ssh.ldif`, it allows storing public SSH keys. It's an OpenLDAP schema with minor modifications to adapt it to 389DS.
 
+### SSH as Text
+
+A single objectClass with a single plain text variable to add an SSH key to things. This is `98sshAsText.ldif`. 
+
 ### Telegram
 
 `98telegram.ldif` is a simple schema to store some [Telegram](https://telegram.org/) related inforamation: ID, nickname and group invite links.
@@ -23,6 +27,15 @@ The very large OID from the UUID arc (i.e. `2.25.1008418248464193827828833840633
 ### WEEE Open
 
 There are a few more bits and bobs in `98weeeopen.ldif`. Not very interesting.
+
+## Generating UUIDs for OIDs
+
+Since this ancient knowledge seems to have disappeared from the Internet after 2019, those UUIDs can be generated like this:
+
+```python
+import uuid
+int(uuid.uuid4())
+```
 
 ## Password Policies
 
