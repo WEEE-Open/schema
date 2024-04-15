@@ -68,7 +68,7 @@ def acis(suffix: str) -> dict[str, tuple]:
 	)
 
 	result[f"ou=Machines,{suffix}"] = (
-		make_aci('Allow Crauto to manage groups', ('targetfilter = "(cn=*)"', 'targetattr = "objectClass || cn || ou || description || member || uniqueMember"',), {'read', 'search', 'compare', 'write', 'add'}, f'userdn = "ldap:///cn=crauto,ou=Services,{suffix}"'),
+		make_aci('Allow Crauto to manage groups', ('targetfilter = "(cn=*)"', 'targetattr = "objectClass || cn || ou || description || member || uniqueMember || createTimestamp || modifyTimestamp"',), {'read', 'search', 'compare', 'write', 'add'}, f'userdn = "ldap:///cn=crauto,ou=Services,{suffix}"'),
 		make_aci('Allow machines to read their data', ('targetfilter = "(cn=*)"', 'targetattr = "objectClass || cn || ou || description || member || uniqueMember || createTimestamp || modifyTimestamp"',), {'read', 'search', 'compare'}, f'userdn = "ldap:///self"'),
 		# make_aci('Allow Crauto to change machine accounts password', ('targetfilter = "(cn=*)"', 'targetattr = "userPassword"'), {'add', 'write'}, f'userdn = "ldap:///cn=crauto,ou=Services,{suffix}"'),
 	)

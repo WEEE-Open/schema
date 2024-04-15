@@ -632,9 +632,9 @@ def test_deny_read_other_machines():
 		assert len(result) == 0, 'Other machines data is not readable'
 
 
-def test_allow_machine_change_crauto():
+def test_allow_machines_change_crauto():
 	test_dn = f"cn=Schifomacchina,ou=Machines,{SUFFIX}"
-	value = "test description"
+	value = b"test description"
 	with LdapConnection(f"cn=Crauto,ou=Services,{SUFFIX}", "asd") as conn:
 		conn.modify_s(test_dn, [(ldap.MOD_REPLACE, 'description', value)])
 		result = conn.search_s(test_dn, ldap.SCOPE_BASE, None, ['description'])
@@ -654,33 +654,34 @@ def test_allow_machine_change_crauto():
 		assert expected == set(result[0][1].keys()), 'All expected attributes are present'
 
 
-def test_allow_machine_add_members_crauto():
+def test_allow_machines_add_members_crauto():
 	test_dn = f"cn=Schifomacchina,ou=Machines,{SUFFIX}"
 	with LdapConnection(f"cn=Crauto,ou=Services,{SUFFIX}", "asd") as conn:
 		result = conn.search_s(test_dn, ldap.SCOPE_BASE, None, ['member'])
-		assert len(result) == 1, 'machine has 1 member before add'
+		assert len(result[0][1]['member']) == 1, 'machine has 1 member before add'
 
-		conn.modify_s(test_dn, [(ldap.MOD_REPLACE, 'member', f"uid=test.user,ou=People,{SUFFIX}")])
+		conn.modify_s(test_dn, [(ldap.MOD_ADD, 'member', f"uid=test.user,ou=People,{SUFFIX}".encode())])
 		result = conn.search_s(test_dn, ldap.SCOPE_BASE, None, ['member'])
-		assert len(result) == 1, 'machine has 2 members after add'
+		assert len(result[0][1]['member']) == 2, 'machine has 2 members after add'
 
-		assert {f"uid=test.user,ou=People,{SUFFIX}", f"uid=test.sysadmin,ou=People,{SUFFIX}"} == set(result[0][1]['member']), 'machine has expected members'
+		assert {f"uid=test.user,ou=People,{SUFFIX}".encode(), f"uid=test.sysadmin,ou=People,{SUFFIX}".encode()} == set(result[0][1]['member']), 'machine has expected members'
 
 
-def test_allow_machine_add_members_crauto():
+def test_allow_machines_delete_members_crauto():
 	test_dn = f"cn=Schifomacchina,ou=Machines,{SUFFIX}"
 	with LdapConnection(f"cn=Crauto,ou=Services,{SUFFIX}", "asd") as conn:
+		conn.modify_s(test_dn, [(ldap.MOD_ADD, 'member', f"uid=test.user,ou=People,{SUFFIX}".encode())])
 		result = conn.search_s(test_dn, ldap.SCOPE_BASE, None, ['member'])
-		assert len(result) == 1, 'machine has 2 members'
+		assert len(result[0][1]['member']) == 2, 'machine has 2 members'
 
-		conn.modify_s(test_dn, [(ldap.MOD_DELETE, 'member', f"uid=test.sysadmin,ou=People,{SUFFIX}")])
+		conn.modify_s(test_dn, [(ldap.MOD_DELETE, 'member', f"uid=test.sysadmin,ou=People,{SUFFIX}".encode())])
 		result = conn.search_s(test_dn, ldap.SCOPE_BASE, None, ['member'])
-		assert len(result) == 1, 'machine has 1 member'
+		assert len(result[0][1]['member']) == 1, 'machine has 1 member'
 
-		assert {f"uid=test.user,ou=People,{SUFFIX}"} == set(result[0][1]['member']), 'machine has expected members'
+		assert {f"uid=test.user,ou=People,{SUFFIX}".encode()} == set(result[0][1]['member']), 'machine has expected members'
 
 
-def test_allow_machine_read_crauto():
+def test_allow_machines_read_crauto():
 	with LdapConnection(f"cn=Crauto,ou=Services,{SUFFIX}", "asd") as conn:
 		result = conn.search_s(f"cn=Schifomacchina,ou=Machines,{SUFFIX}", ldap.SCOPE_BASE, None, ['*', '+'])
 		assert len(result) > 0, 'Machine is readable'
