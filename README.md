@@ -53,19 +53,19 @@ pip install -r requirements.txt
 ./make_acis.py -y -s "{{ dirsrv_suffix }}"
 # Alternatively, as a LDIF file (replace with real suffix):
 ./make_acis.py -l -s "dc=example,dc=test"
-# Create LDIF file with ACIs for tests:
-./make_acis.py -l -s "dc=example,dc=test" > aci_tmp.ldif
 ```
 To test them:
 
 ```shell
+# Create LDIF file with ACIs for tests:
+./make_acis.py -l -s "dc=example,dc=test" > aci_tmp.ldif
 # Run 389DS in a container or in any other way of your choice
 docker run --name dirsrv -p 3389:3389 -e DS_SUFFIX_NAME="dc=example,dc=test" -e DS_DM_PASSWORD="asd" 389ds/dirsrv:latest
 # Required env variables for the tests
 export TEST_PASSWORD="asd"
 export TEST_LDAP_CONNECTION_STRING="ldap://disrv:3389"
 export TEST_SUFFIX="dc=example,dc=test"
-export TEST_ACI_LDIF="aci_tmp.txt"
+export TEST_ACI_LDIF="aci_tmp.lidf"
 export TEST_IMPORT_SCHEMA=1 # To import the schema during tests, do not set at all if you want to import manually
 # Run tests, this will also create a backend and DIT
 ./test_acis.py

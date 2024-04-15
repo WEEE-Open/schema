@@ -25,14 +25,14 @@ def acis(suffix: str) -> dict[str, tuple]:
 	result = dict()
 
 	result[suffix] = (
-		make_aci('Allow all to read suffix', (f'target = "ldap:///{suffix}"', 'targetattr = "objectClass"','targetfilter = "(objectClass=domain)"'), {'read', 'search'}, f'userdn = "ldap:///all"'),
+		make_aci('Allow all to read suffix', (f'target = "ldap:///{suffix}"', 'targetattr = "objectClass"', 'targetfilter = "(objectClass=domain)"'), {'read', 'search'}, f'userdn = "ldap:///all"'),
 	)
 
 	result[f"ou=People,{suffix}"] = (
 		# nsAccountLock is required to search for (!(nsAccountLock=true)), placing it in targetfilter means that it MUST be present (with the specified value).
 		# mail is for password recovery
-		make_aci('Allow Keycloak to read users', ('targetfilter = "(uid=*)"', 'targetattr = "objectClass || memberOf || cn || uid || mail || createTimestamp  || nsAccountLock || creatorsName || entrydn || entryid || hasSubordinates || modifiersName || modifyTimestamp || nsUniqueId || weeeOpenUniqueId || numSubordinates || parentid || subschemaSubentry"'), {'read', 'search', 'compare'}, f'userdn = "ldap:///cn=Keycloak,ou=Services,{suffix}"'),
-		make_aci('Allow Nextcloud to read users', ('targetfilter = "(uid=*)"', 'targetattr = "objectClass || memberOf || sn || cn || givenName || uid || mail || jpegPhoto || createTimestamp || creatorsName || entrydn || entryid || hasSubordinates || modifiersName || modifyTimestamp || nsUniqueId || weeeOpenUniqueId || numSubordinates || parentid || subschemaSubentry"'), {'read', 'search', 'compare'}, f'userdn = "ldap:///cn=nextcloud,ou=Services,{suffix}"'),
+		make_aci('Allow Keycloak to read users', ('targetfilter = "(uid=*)"', 'targetattr = "objectClass || memberOf || cn || uid || mail || createTimestamp  || nsAccountLock || creatorsName || entrydn || entryid || hasSubordinates || modifiersName || modifyTimestamp || weeeOpenUniqueId || numSubordinates || parentid || subschemaSubentry"'), {'read', 'search', 'compare'}, f'userdn = "ldap:///cn=Keycloak,ou=Services,{suffix}"'),
+		make_aci('Allow Nextcloud to read users', ('targetfilter = "(uid=*)"', 'targetattr = "objectClass || memberOf || sn || cn || givenName || uid || mail || jpegPhoto || createTimestamp || creatorsName || entrydn || entryid || hasSubordinates || modifiersName || modifyTimestamp || weeeOpenUniqueId || numSubordinates || parentid || subschemaSubentry"'), {'read', 'search', 'compare'}, f'userdn = "ldap:///cn=nextcloud,ou=Services,{suffix}"'),
 		# make_aci('Allow Keycloak to change OTP secrets', ('targetfilter = "(uid=*)"', 'targetattr = "otpSecretKey"'), {'write'}, f'userdn = "ldap:///cn=Keycloak,ou=Services,{suffix}"'),
 		# make_aci('Allow users to change their password', ('targetfilter = "(uid=*)"', 'targetattr = "userPassword"'), {'write'}, f'userdn = "ldap:///self"'),
 		make_aci('Allow Crauto to read users', ('targetfilter = "(uid=*)"', 'targetattr = "uid || cn || givenname || sn || memberof || mail || schacpersonaluniquecode || degreecourse || schacdateofbirth || schacplaceofbirth || mobile || safetytestdate || telegramid || telegramnickname || weeelabnickname || hasKey || signedSir || websiteDescription || pronouns || sshpublickey || description || nsaccountlock || createTimestamp || modifyTimestamp || objectClass"'), {'read', 'search', 'compare'}, f'userdn = "ldap:///cn=crauto,ou=Services,{suffix}"'),
@@ -42,7 +42,7 @@ def acis(suffix: str) -> dict[str, tuple]:
 		make_aci('Allow bot to read users', ('targetfilter = "(uid=*)"', 'targetattr = "uid || cn || givenname || sn || memberof || telegramid || telegramnickname || schacDateOfBirth || safetyTestDate || hasKey || signedSir || nsaccountlock || objectClass"'), {'read', 'search', 'compare'}, f'userdn = "ldap:///cn=bot,ou=Services,{suffix}"'),
 		make_aci('Allow bot to update Telegram nickname and id', ('targetfilter = "(uid=*)"', 'targetattr = "telegramnickname || telegramid"'), {'write'}, f'userdn = "ldap:///cn=bot,ou=Services,{suffix}"'),
 
-		make_aci('Allow Wiki to read users', ('targetfilter = "(uid=*)"', 'targetattr = "objectClass || memberOf || sn || cn || givenName || uid || mail || jpegPhoto || entrydn || nsUniqueId || weeeOpenUniqueId || nsAccountLock"'), {'read', 'search', 'compare'}, f'userdn = "ldap:///cn=wiki,ou=Services,{suffix}"'),
+		make_aci('Allow Wiki to read users', ('targetfilter = "(uid=*)"', 'targetattr = "objectClass || memberOf || sn || cn || givenName || uid || mail || jpegPhoto || entrydn || weeeOpenUniqueId || nsAccountLock"'), {'read', 'search', 'compare'}, f'userdn = "ldap:///cn=wiki,ou=Services,{suffix}"'),
 
 		make_aci('Allow weeehire to read users', ('targetfilter = "(uid=*)"', 'targetattr = "uid || cn || telegramnickname || nsaccountlock || memberof || objectclass"'), {'read', 'search', 'compare'}, f'userdn = "ldap:///cn=weeehire,ou=Services,{suffix}"'),
 
@@ -60,11 +60,17 @@ def acis(suffix: str) -> dict[str, tuple]:
 	)
 
 	result[f"ou=Groups,{suffix}"] = (
-		make_aci('Allow Keycloak to read groups', ('targetfilter = "(cn=*)"', 'targetattr = "objectClass || cn || ou || description || member || uniqueMember || nsUniqueId || weeeOpenUniqueId"'), {'read', 'search', 'compare'}, f'userdn = "ldap:///cn=Keycloak,ou=Services,{suffix}"'),
-		make_aci('Allow Nextcloud to read groups', ('targetfilter = "(cn=*)"', 'targetattr = "objectClass || cn || ou || description || member || uniqueMember || nsUniqueId || weeeOpenUniqueId"'), {'read', 'search', 'compare'}, f'userdn = "ldap:///cn=Nextcloud,ou=Services,{suffix}"'),
-		make_aci('Allow Wiki to read groups', ('targetfilter = "(cn=*)"', 'targetattr = "objectClass || cn || ou || member || uniqueMember || nsUniqueId || weeeOpenUniqueId"'), {'read', 'search', 'compare'}, f'userdn = "ldap:///cn=wiki,ou=Services,{suffix}"'),
-		make_aci('Allow Crauto to read groups', ('targetfilter = "(cn=*)"', 'targetattr = "objectClass || cn || ou || description || member || uniqueMember || nsUniqueId || weeeOpenUniqueId"',), {'read', 'search', 'compare'}, f'userdn = "ldap:///cn=crauto,ou=Services,{suffix}"'),
+		make_aci('Allow Keycloak to read groups', ('targetfilter = "(cn=*)"', 'targetattr = "objectClass || cn || ou || description || member || uniqueMember || weeeOpenUniqueId"'), {'read', 'search', 'compare'}, f'userdn = "ldap:///cn=Keycloak,ou=Services,{suffix}"'),
+		make_aci('Allow Nextcloud to read groups', ('targetfilter = "(cn=*)"', 'targetattr = "objectClass || cn || ou || description || member || uniqueMember || weeeOpenUniqueId"'), {'read', 'search', 'compare'}, f'userdn = "ldap:///cn=Nextcloud,ou=Services,{suffix}"'),
+		make_aci('Allow Wiki to read groups', ('targetfilter = "(cn=*)"', 'targetattr = "objectClass || cn || ou || member || uniqueMember || weeeOpenUniqueId"'), {'read', 'search', 'compare'}, f'userdn = "ldap:///cn=wiki,ou=Services,{suffix}"'),
+		make_aci('Allow Crauto to read groups', ('targetfilter = "(cn=*)"', 'targetattr = "objectClass || cn || ou || description || member || uniqueMember || weeeOpenUniqueId"',), {'read', 'search', 'compare'}, f'userdn = "ldap:///cn=crauto,ou=Services,{suffix}"'),
 		make_aci('Allow Crauto to add and remove people from groups', ('targetfilter = "(cn=*)"', 'targetattr = "member || uniqueMember"',), {'write'}, f'userdn = "ldap:///cn=crauto,ou=Services,{suffix}"'),
+	)
+
+	result[f"ou=Machines,{suffix}"] = (
+		make_aci('Allow Crauto to manage groups', ('targetfilter = "(cn=*)"', 'targetattr = "objectClass || cn || ou || description || member || uniqueMember"',), {'read', 'search', 'compare', 'write', 'add'}, f'userdn = "ldap:///cn=crauto,ou=Services,{suffix}"'),
+		make_aci('Allow machines to read their data', ('targetfilter = "(cn=*)"', 'targetattr = "objectClass || cn || ou || description || member || uniqueMember || createTimestamp || modifyTimestamp"',), {'read', 'search', 'compare'}, f'userdn = "ldap:///self"'),
+		# make_aci('Allow Crauto to change machine accounts password', ('targetfilter = "(cn=*)"', 'targetattr = "userPassword"'), {'add', 'write'}, f'userdn = "ldap:///cn=crauto,ou=Services,{suffix}"'),
 	)
 
 	return result
