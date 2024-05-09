@@ -1,0 +1,63 @@
+#
+# LDAP Public Key schema for Wireguard public keys and ip addresses
+#
+# The MIT License
+#
+# Copyright 2024 WEEE Open
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+#
+#---------------------------------------------------------------------
+#
+dn: cn=schema
+#
+#---------------------------------------------------------------------
+#
+attributeTypes: (
+  2.25.184332172334288817653226772165133492043.1.1
+  NAME 'wireguardPublicKey'
+  DESC 'Wireguard Public key as Directory String rfc4517'
+  EQUALITY caseExactMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  X-ORIGIN 'WEEE Open'
+  SINGLE-VALUE
+  )
+#
+#---------------------------------------------------------------------
+#
+attributeTypes: (
+  2.25.184332172334288817653226772165133492043.1.2
+  NAME 'wireguardIpAddressSpace'
+  DESC 'Ip network address of address block /24 inside wireguard Lan as string'
+  EQUALITY caseExactMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  X-ORIGIN 'WEEE Open'
+  SINGLE-VALUE
+  )
+#
+#---------------------------------------------------------------------
+#
+objectClasses: (
+  2.25.203046914991419968316830242105494635245.2.1
+  NAME 'hasWireguard'
+  DESC 'Wireguard container'
+  AUXILIARY
+  MAY ( wireguardPublicKey $ wireguardIpAddressSpace )
+  X-ORIGIN 'WEEE Open'
+  )
