@@ -387,6 +387,25 @@ def test_allow_read_crauto():
 		assert set(result[0][1].keys()) == expected, 'All expected attributes are present'
 
 
+def test_allow_read_birthday_crauto():
+	test_dn = f"uid=test.user,ou=People,{SUFFIX}"
+	with LdapConnection(f"cn=Crauto,ou=Services,{SUFFIX}", "asd") as conn:
+		result = conn.search_s(test_dn, ldap.SCOPE_BASE, None, ['isBirthdayPublic'])
+		assert 'isBirthdayPublic' not in result[0][1]
+
+	with LdapConnection(f"cn=Crauto,ou=Services,{SUFFIX}", "asd") as conn:
+		conn.modify_s(test_dn, [(ldap.MOD_REPLACE, 'isBirthdayPublic', b'TRUE')])
+		result = conn.search_s(test_dn, ldap.SCOPE_BASE, None, ['isBirthdayPublic'])
+		assert len(result) > 0, 'isBirthdayPublic is set'
+		assert result[0][1]['isBirthdayPublic'][0] == b'TRUE', 'isBirthdayPublic has the expected value'
+
+	with LdapConnection(f"cn=Crauto,ou=Services,{SUFFIX}", "asd") as conn:
+		conn.modify_s(test_dn, [(ldap.MOD_REPLACE, 'isBirthdayPublic', b'FALSE')])
+		result = conn.search_s(test_dn, ldap.SCOPE_BASE, None, ['isBirthdayPublic'])
+		assert len(result) > 0, 'isBirthdayPublic is set'
+		assert result[0][1]['isBirthdayPublic'][0] == b'FALSE', 'isBirthdayPublic has the expected value'
+
+
 def test_allow_read_nextcloud():
 	with LdapConnection(f"cn=Nextcloud,ou=Services,{SUFFIX}", "asd") as conn:
 		result = conn.search_s(f"uid=test.user,ou=People,{SUFFIX}", ldap.SCOPE_BASE, None, ['*', '+'])
