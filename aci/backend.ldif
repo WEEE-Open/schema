@@ -1,19 +1,19 @@
 version: 1
 
-dn: cn=userRoot,cn=ldbm database,cn=plugins,cn=config
-objectClass: top
-objectClass: extensibleObject
-objectClass: nsBackendInstance
-cn: userRoot
-nsslapd-suffix: dc=example,dc=test
+# dn: cn=userRoot,cn=ldbm database,cn=plugins,cn=config
+# objectClass: top
+# objectClass: extensibleObject
+# objectClass: nsBackendInstance
+# cn: userRoot
+# nsslapd-suffix: dc=example,dc=test
 
-dn: cn=dc\3Dexample\,dc\3Dtest,cn=mapping tree,cn=config
-objectClass: top
-objectClass: extensibleObject
-objectClass: nsMappingTree
-cn: dc=example,dc=test
-nsslapd-state: backend
-nsslapd-backend: userRoot
+# dn: cn=dc\3Dexample\,dc\3Dtest,cn=mapping tree,cn=config
+# objectClass: top
+# objectClass: extensibleObject
+# objectClass: nsMappingTree
+# cn: dc=example,dc=test
+# nsslapd-state: backend
+# nsslapd-backend: userRoot
 
 dn: dc=example,dc=test
 objectClass: top
