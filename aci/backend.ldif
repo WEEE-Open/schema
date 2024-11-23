@@ -1,0 +1,23 @@
+version: 1
+
+dn: cn=userRoot,cn=ldbm database,cn=plugins,cn=config
+objectClass: top
+objectClass: extensibleObject
+objectClass: nsBackendInstance
+cn: userRoot
+nsslapd-suffix: dc=example,dc=test
+
+dn: cn=dc\3Dexample\,dc\3Dtest,cn=mapping tree,cn=config
+objectClass: top
+objectClass: extensibleObject
+objectClass: nsMappingTree
+cn: dc=example,dc=test
+nsslapd-state: backend
+nsslapd-backend: userRoot
+
+dn: dc=example,dc=test
+objectClass: top
+objectClass: domain
+dc: example
+description: dc=example,dc=test
+aci: (targetattr="dc || description || objectClass")(targetfilter="(objectClass=domain)")(version 3.0; acl "Enable anyone domain read"; allow (read, search, compare)(userdn="ldap:///anyone");)
